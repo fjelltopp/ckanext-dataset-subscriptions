@@ -1,0 +1,14 @@
+# dataset_subscriptions-js:
+#   filter: rjsmin
+#   output: ckanext-dataset_subscriptions/%(version)s-dataset_subscriptions.js
+#   contents:
+#     - js/dataset_subscriptions.js
+#   extra:
+#     preload:
+#       - base/main
+
+# dataset_subscriptions-css:
+#   filter: cssrewrite
+#   output: ckanext-dataset_subscriptions/%(version)s-dataset_subscriptions.css
+#   contents:
+#     - css/dataset_subscriptions.css
