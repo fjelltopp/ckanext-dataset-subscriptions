@@ -10,23 +10,15 @@ from ckan.common import config
 @toolkit.side_effect_free
 def send_email_notifications(original_action, context, data_dict):
     email_notifications._notifications_functions = [dms_notification_provider]
-    email_notifications.send_notification = dms_send_notification
+    email_notifications.send_notification = latin_username_send_notification
     return original_action(context, data_dict)
 
-def dms_send_notification(user, email_dict):
-    '''Email `email_dict` to `user`.'''
-    import ckan.lib.mailer
-    if not user.get('email'):
-        # FIXME: Raise an exception.
-        return
-    # fix for AWS SES not supporting UTF8 encoding of recepient field
-    # https://docs.aws.amazon.com/cli/latest/reference/ses/send-email.html
-    full_name_latin1 = user['display_name'].encode('latin-1', 'replace')
-    try:
-        ckan.lib.mailer.mail_recipient(full_name_latin1, user['email'],
-                email_dict['subject'], email_dict['body'])
-    except ckan.lib.mailer.MailerException:
-        raise
+
+def latin_username_send_notification(user, email_dict):
+   # fix for AWS SES not supporting UTF8 encoding of recepient field
+   # https://docs.aws.amazon.com/cli/latest/reference/ses/send-email.html
+   user['display_name'] = user['display_name'].encode('latin-1', 'replace')
+   return email_notifications.send_notification(user, email_dict)
 
 
 def _add_dataset_name_to_activity_list(activity_list, context):

@@ -9,7 +9,7 @@ import mock
 @pytest.mark.ckan_config('ckan.plugins', 'dataset_subscriptions')
 @pytest.mark.usefixtures("with_plugins")
 @pytest.mark.usefixtures("clean_db")
-def create_resources(with_activity):
+def create_user_with_resources(with_activity):
     subscribed_user = factories.User(name='user5', activity_streams_email_notifications=True)
     active_user = factories.User(name='user6')
     organization = factories.Organization(
@@ -36,7 +36,7 @@ def create_resources(with_activity):
 
 @pytest.mark.usefixtures("clean_db")
 def test_with_no_dataset_updates():
-    user=create_resources(with_activity=False)
+    user=create_user_with_resources(with_activity=False)
     activities = [activity for activity in 
                 helpers.call_action("dashboard_activity_list", context={"user": user["id"]})
                 if "package" in activity["activity_type"]]
@@ -45,7 +45,7 @@ def test_with_no_dataset_updates():
 
 @pytest.mark.usefixtures("clean_db")
 def test_with_dataset_updates():
-    user=create_resources(with_activity=True)
+    user=create_user_with_resources(with_activity=True)
     activity_list = helpers.call_action("dashboard_activity_list", context={"user": user["id"]})
     # We'll be returning only package notifications
     filtered_activity_list = [activity for activity in activity_list
@@ -58,7 +58,7 @@ def test_with_dataset_updates():
 @pytest.mark.ckan_config("ckan.activity_streams_email_notifications", True)
 @mock.patch("ckan.logic.action.update.request")
 def test_send_notification_injection(mock_request):
-    user=create_resources(with_activity=True)
+    user=create_user_with_resources(with_activity=True)
     notifications = email_notifications.get_notifications(user, datetime.datetime.fromtimestamp(3600))
     # we expect two notifications - one for a new dataset and one for a resource
     assert [ "2 new activities from CKAN" in notification["subject"]  for notification
