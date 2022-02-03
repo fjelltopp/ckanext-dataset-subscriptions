@@ -1,0 +1,14 @@
+{% set num = activities|length %}
+{{ _("Here's a list of recently updated datasets you're following in DMS:") }}
+
+{% for activity in activities %}
+  {{ _("{count}. Dataset title: {title}").format(count=loop.index, title=activity.data.package.title) }}
+  {{ g.site_url + '/dataset/' + activity.dataset_name }}
+{% endfor %}
+{{ _("Visit {site_url}/dashboard to see your notifications directly in DMS.").format(site_url=g.site_url) }}
+
+{{ "Best regards,
+DMS team" }}
+
+{{ _("You have received this email because you've subscribed to DMS data notifications. To change your notifications preferences, click on this link:") }}
+{{ g.site_url + '/user/edit' }}
