@@ -8,6 +8,7 @@ from ckan.common import config
 import unihandecode
 import datetime
 
+
 @toolkit.chained_action
 @toolkit.side_effect_free
 def send_email_notifications(original_action, context, data_dict):
@@ -17,27 +18,27 @@ def send_email_notifications(original_action, context, data_dict):
 
 
 def latin_username_send_notification(user, email_dict):
-   # fix for AWS SES not supporting UTF8 encoding of recepient field
-   # https://docs.aws.amazon.com/cli/latest/reference/ses/send-email.html
-   user['display_name'] = unihandecode.unidecode(user['display_name'])
-   return send_notification(user, email_dict)
+    # fix for AWS SES not supporting UTF8 encoding of recepient field
+    # https://docs.aws.amazon.com/cli/latest/reference/ses/send-email.html
+    user['display_name'] = unihandecode.unidecode(user['display_name'])
+    return send_notification(user, email_dict)
 
 
 def _add_dataset_name_to_activity_list(activity_list, context):
-        for index, activity in enumerate(activity_list):
-            object_id = activity['object_id']
-            dataset = toolkit.get_action('package_show')(
-                        context, {'id': object_id})
-            dataset_name = dataset['name']
-            activity_list[index]['dataset_name'] = dataset_name
-        return activity_list
+    for index, activity in enumerate(activity_list):
+        object_id = activity['object_id']
+        dataset = toolkit.get_action('package_show')(
+                    context, {'id': object_id})
+        dataset_name = dataset['name']
+        activity_list[index]['dataset_name'] = dataset_name
+    return activity_list
 
 
 def _filter_out_old_activites(activity_list, since):
     strptime = datetime.datetime.strptime
     fmt = '%Y-%m-%dT%H:%M:%S.%f'
     activity_list = [activity for activity in activity_list
-            if strptime(activity['timestamp'], fmt) > since]
+                     if strptime(activity['timestamp'], fmt) > since]
     return activity_list
 
 
@@ -46,11 +47,13 @@ def dms_notification_provider(user_dict, since):
                'user': user_dict['id']}
     activity_list = logic.get_action('dashboard_activity_list')(context, {})
     dataset_activity_list = [activity for activity in activity_list
-                     if activity['user_id'] != user_dict['id']
-                     and 'package' in activity['activity_type']]
+                             if activity['user_id'] != user_dict['id']
+                             and 'package' in activity['activity_type']]
     # We want a notification per changed dataset, not a list of all changes
-    timestamp_sorted_activity_list = sorted(dataset_activity_list, key = lambda item: item['timestamp'])
-    deduplicated_activity_list = list({item["object_id"]: item for item in timestamp_sorted_activity_list}.values())
+    timestamp_sorted_activity_list = sorted(dataset_activity_list,
+                                            key = lambda item: item['timestamp'])
+    deduplicated_activity_list = list({item["object_id"]:
+                                       item for item in timestamp_sorted_activity_list}.values())
     activity_list_with_dataset_name = _add_dataset_name_to_activity_list(deduplicated_activity_list, context)
     recent_activity_list = _filter_out_old_activites(activity_list_with_dataset_name, since)
     return dms_notifications_for_activities(recent_activity_list, user_dict)
