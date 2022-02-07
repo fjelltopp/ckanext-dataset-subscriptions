@@ -1,10 +1,12 @@
 import ckan.plugins.toolkit as toolkit
 import ckan.logic as logic
+from ckan.lib.email_notifications import send_notification
 import ckan.lib.email_notifications as email_notifications
 import ckan.model as model
 import ckan.lib.base as base
 from ckan.common import config
-
+import unihandecode
+import datetime
 
 @toolkit.chained_action
 @toolkit.side_effect_free
@@ -17,8 +19,8 @@ def send_email_notifications(original_action, context, data_dict):
 def latin_username_send_notification(user, email_dict):
    # fix for AWS SES not supporting UTF8 encoding of recepient field
    # https://docs.aws.amazon.com/cli/latest/reference/ses/send-email.html
-   user['display_name'] = user['display_name'].encode('latin-1', 'replace')
-   return email_notifications.send_notification(user, email_dict)
+   user['display_name'] = unihandecode.unidecode(user['display_name'])
+   return send_notification(user, email_dict)
 
 
 def _add_dataset_name_to_activity_list(activity_list, context):
@@ -30,6 +32,7 @@ def _add_dataset_name_to_activity_list(activity_list, context):
             activity_list[index]['dataset_name'] = dataset_name
         return activity_list
 
+
 def dms_notification_provider(user_dict, since):
     context = {'model': model, 'session': model.Session,
                'user': user_dict['id']}
@@ -39,8 +42,13 @@ def dms_notification_provider(user_dict, since):
                      if activity['user_id'] != user_dict['id']
                      and 'package' in activity['activity_type']]
     # We want a notification per changed dataset, not a list of all changes
-    deduplicated_activity_list = list({item["object_id"]: item for item in activity_list}.values())
+    deduplicated_activity_list = list({item["object_id"]: item for item in sorted(activity_list, key = lambda item: item['timestamp'])}.values())
     updated_activity_list = _add_dataset_name_to_activity_list(deduplicated_activity_list, context)
+    # Filter out the old activities.
+    strptime = datetime.datetime.strptime
+    fmt = '%Y-%m-%dT%H:%M:%S.%f'
+    updated_activity_list = [activity for activity in updated_activity_list
+            if strptime(activity['timestamp'], fmt) > since]
     return dms_notifications_for_activities(updated_activity_list, user_dict)
 
 
