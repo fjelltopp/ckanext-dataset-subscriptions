@@ -33,23 +33,27 @@ def _add_dataset_name_to_activity_list(activity_list, context):
         return activity_list
 
 
+def _filter_out_old_activites(activity_list, since):
+    strptime = datetime.datetime.strptime
+    fmt = '%Y-%m-%dT%H:%M:%S.%f'
+    activity_list = [activity for activity in activity_list
+            if strptime(activity['timestamp'], fmt) > since]
+    return activity_list
+
+
 def dms_notification_provider(user_dict, since):
     context = {'model': model, 'session': model.Session,
                'user': user_dict['id']}
     activity_list = logic.get_action('dashboard_activity_list')(context, {})
-    # Return only activites that contain dataset changes
-    activity_list = [activity for activity in activity_list
+    dataset_activity_list = [activity for activity in activity_list
                      if activity['user_id'] != user_dict['id']
                      and 'package' in activity['activity_type']]
     # We want a notification per changed dataset, not a list of all changes
-    deduplicated_activity_list = list({item["object_id"]: item for item in sorted(activity_list, key = lambda item: item['timestamp'])}.values())
-    updated_activity_list = _add_dataset_name_to_activity_list(deduplicated_activity_list, context)
-    # Filter out the old activities.
-    strptime = datetime.datetime.strptime
-    fmt = '%Y-%m-%dT%H:%M:%S.%f'
-    updated_activity_list = [activity for activity in updated_activity_list
-            if strptime(activity['timestamp'], fmt) > since]
-    return dms_notifications_for_activities(updated_activity_list, user_dict)
+    timestamp_sorted_activity_list = sorted(dataset_activity_list, key = lambda item: item['timestamp'])
+    deduplicated_activity_list = list({item["object_id"]: item for item in timestamp_sorted_activity_list}.values())
+    activity_list_with_dataset_name = _add_dataset_name_to_activity_list(deduplicated_activity_list, context)
+    recent_activity_list = _filter_out_old_activites(activity_list_with_dataset_name, since)
+    return dms_notifications_for_activities(recent_activity_list, user_dict)
 
 
 def dms_notifications_for_activities(activities, user_dict):
