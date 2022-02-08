@@ -18,7 +18,7 @@ setup(
     # http://packaging.python.org/en/latest/tutorial.html#version
     version='0.0.2',
 
-    description='''Extension for UI and API to support datopian/data-subscriptions service for subscribing to CKAN dataset changes.''',
+    description='''Send a detailed email notification about followed datasets''',
     long_description=long_description,
     long_description_content_type="text/markdown",
 
@@ -45,12 +45,12 @@ setup(
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.8',
     ],
 
 
     # What does your project relate to?
-    keywords='''CKAN sms notifications subscription''',
+    keywords='''CKAN notifications subscription''',
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
