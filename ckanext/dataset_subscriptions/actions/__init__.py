@@ -51,7 +51,7 @@ def dms_notification_provider(user_dict, since):
                              and 'package' in activity['activity_type']]
     # We want a notification per changed dataset, not a list of all changes
     timestamp_sorted_activity_list = sorted(dataset_activity_list,
-                                            key = lambda item: item['timestamp'])
+                                            key=lambda item: item['timestamp'])
     deduplicated_activity_list = list({item["object_id"]:
                                        item for item in timestamp_sorted_activity_list}.values())
     activity_list_with_dataset_name = _add_dataset_name_to_activity_list(deduplicated_activity_list, context)

@@ -21,5 +21,5 @@ class DatasetSubscriptionsPlugin(plugins.SingletonPlugin):
             'send_email_notifications': actions.send_email_notifications,
             'user_create': whatsapp_notifications.user_create,
             'user_update': whatsapp_notifications.user_update,
-            'user_show': whatsapp_notifications.user_show,
+            'user_show': whatsapp_notifications.user_show
         }

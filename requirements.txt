@@ -1,1 +1,2 @@
 Unihandecode==0.81
+twilio==7.6.0
