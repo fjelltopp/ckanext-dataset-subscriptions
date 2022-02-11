@@ -25,6 +25,8 @@ def test_user_create_supports_plugin_extras(sysadmin_context):
     }
 
 
+@pytest.mark.usefixtures("clean_db")
+@pytest.mark.usefixtures("with_plugins")
 def test_user_update_supports_plugin_extras(sysadmin_context):
     user = factories.User()
     user_dict = {**user, **{
@@ -32,7 +34,7 @@ def test_user_update_supports_plugin_extras(sysadmin_context):
         "activity_streams_whatsup_notifications": True
         }
     }
-    updated_user = helpers.call_action('user_create', context=sysadmin_context, **user_dict)
+    updated_user = helpers.call_action('user_update', context=sysadmin_context, **user_dict)
 
     assert updated_user["plugin_extras"] == {
         "dataset_subscriptions": {
