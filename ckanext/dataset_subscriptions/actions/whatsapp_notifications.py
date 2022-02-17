@@ -13,6 +13,7 @@ DATASET_SUBSCRIPTIONS = 'dataset_subscriptions'
 
 
 @toolkit.chained_action
+@toolkit.side_effect_free
 def user_show(original_action, context, data_dict):
     user = original_action(context, data_dict)
     user_obj = _get_user_obj(context)
