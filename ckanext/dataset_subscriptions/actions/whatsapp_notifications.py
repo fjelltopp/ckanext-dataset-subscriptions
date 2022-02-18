@@ -1,7 +1,6 @@
 import copy
 
-from ckan import authz, model
-from ckan.common import asbool
+from ckan import model
 from ckan.plugins import toolkit
 
 CUSTOM_FIELDS = [
@@ -29,8 +28,8 @@ def user_show(original_action, context, data_dict):
 @toolkit.chained_action
 def user_create(original_action, context, data_dict):
     for field in CUSTOM_FIELDS:
-        if not data_dict.get(field['name']):
-            raise toolkit.ValidationError({field['name']: [f"{field['name']} point must be specified"]})
+        if not field['name'] in data_dict:
+            raise toolkit.ValidationError({field['name']: [f"{field['name']} must be specified"]})
 
     user_dict = original_action(context, data_dict)
     user_obj = _get_user_obj(context)
@@ -51,8 +50,8 @@ def user_create(original_action, context, data_dict):
 @toolkit.chained_action
 def user_update(original_action, context, data_dict):
     for field in CUSTOM_FIELDS:
-        if not data_dict.get(field['name']):
-            raise toolkit.ValidationError({field['name']: [f"{field['name']} point must be specified"]})
+        if not field['name'] in data_dict:
+            raise toolkit.ValidationError({field['name']: [f"{field['name']} must be specified"]})
 
     user_dict = original_action(context, data_dict)
     user_obj = _get_user_obj(context)

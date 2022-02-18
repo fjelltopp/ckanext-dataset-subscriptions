@@ -1,9 +1,12 @@
-from ckan.tests import factories
+from ckan.tests import factories as ckan_factories
+from ckanext.dataset_subscriptions.tests import factories
+
 import ckan.lib.email_notifications as email_notifications
 import ckanext.dataset_subscriptions.actions as actions
 import ckan.tests.helpers as helpers
 import pytest
 import datetime
+
 
 
 @pytest.mark.ckan_config('ckan.plugins')
@@ -13,14 +16,14 @@ def create_user_with_resources(with_activity):
     subscribed_user = factories.User(name='user1',
                                      activity_streams_email_notifications=True)
     active_user = factories.User(name='user2')
-    organization = factories.Organization(
+    organization = ckan_factories.Organization(
         users=[
             {'name': subscribed_user['name'], 'capacity': 'member'},
             {'name': active_user['name'], 'capacity': 'editor'}
         ]
     )
     if with_activity:
-        dataset = factories.Dataset(
+        dataset = ckan_factories.Dataset(
             owner_org=organization['id'],
             type='test-schema',
             user=active_user
@@ -29,7 +32,7 @@ def create_user_with_resources(with_activity):
             "follow_dataset", context={"user": subscribed_user["name"]},
             **dataset
             )
-        factories.Resource(
+        ckan_factories.Resource(
                  package_id=dataset['id'],
                  user=active_user
         )
