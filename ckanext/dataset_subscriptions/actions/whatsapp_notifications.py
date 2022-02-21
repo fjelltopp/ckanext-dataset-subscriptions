@@ -51,7 +51,7 @@ def user_create(original_action, context, data_dict):
 def user_update(original_action, context, data_dict):
     for field in CUSTOM_FIELDS:
         if not field['name'] in data_dict:
-            raise toolkit.ValidationError({field['name']: [f"{field['name']} must be specified"]})
+            data_dict[field['name']] = field['default']
 
     user_dict = original_action(context, data_dict)
     user_obj = _get_user_obj(context)
