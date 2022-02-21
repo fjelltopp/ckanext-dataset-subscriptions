@@ -105,13 +105,11 @@ def _validate_plugin_extras(extras):
 
 
 def get_phonenumber(user_dict):
-    activity_streams_whatsapp_notifications = True
-    if activity_streams_whatsapp_notifications:
-        try:
-            phonenumber = "+48123123123"
+    if "activity_streams_whatsapp_notifications" in user_dict and "phonenumber" in user_dict:
+        if user_dict["activity_streams_whatsapp_notifications"] and user_dict["phonenumber"]:
+            phonenumber = user_dict["phonenumber"]
             return phonenumber
-        except KeyError:
-            return False
+    return False
 
 
 def send_whatsapp_notifications(context, data_dict):
@@ -119,7 +117,7 @@ def send_whatsapp_notifications(context, data_dict):
     users = logic.get_action('user_list')(context, {'all_fields': True})
     for user in users:
         user = logic.get_action('user_show')(context, {'id': user['id'],
-                                                       'include_plugin_extras': True})
+                                                       'include_plugin_extras': False})
         if get_phonenumber(user):
             prepare_whatsapp_notifications(user)
 
@@ -163,9 +161,15 @@ def send_whatsapp_notification(activities, phonenumber):
     client = Client(account_sid, auth_token)
     from_nr = "whatsapp:" + sender_nr
     to_nr = "whatsapp:" + phonenumber
+    header = toolkit.ungettext(
+        "{n} dataset you're following got recently updated in {site_title}",
+        "{n} datasets you're following got recently updated in {site_title}",
+        len(activities)).format(
+                site_title=toolkit.config.get('ckan.site_title'),
+                n=len(activities))
     message_body = base.render(
             'dataset-subscriptions_whatsapp_body.j2',
-            extra_vars={'activities': activities})
+            extra_vars={'activities': activities, 'header': header})
     message = client.messages.create(
                             from_=from_nr,
                             body=message_body,

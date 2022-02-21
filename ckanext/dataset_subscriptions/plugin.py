@@ -19,6 +19,7 @@ class DatasetSubscriptionsPlugin(plugins.SingletonPlugin):
     def get_actions(self):
         return {
             'send_email_notifications': actions.send_email_notifications,
+            'send_whatsapp_notifications': whatsapp_notifications.send_whatsapp_notifications,
             'user_create': whatsapp_notifications.user_create,
             'user_update': whatsapp_notifications.user_update,
             'user_show': whatsapp_notifications.user_show

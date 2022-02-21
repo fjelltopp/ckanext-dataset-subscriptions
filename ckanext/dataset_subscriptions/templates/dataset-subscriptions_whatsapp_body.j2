@@ -1,15 +1,11 @@
 {% set num = activities|length %}
-{{ _("Here's a list of recently updated datasets you're following in DMS:") }}
+{{ _(header) }}
 
 {% for activity in activities %}
   {{ _("{count}. Dataset title: {title}").format(count=loop.index, title=activity.data.package.title) }}
   {{ g.site_url + '/dataset/' + activity.dataset_name }}
 {% endfor %}
-{{ _("Visit {site_url}/dashboard to see your notifications directly in DMS.").format(site_url=g.site_url) }}
-
-{{ "Best regards,
-DMS team" }}
-
-{{ _("You have received this message because you've subscribed to DMS WhatsAppdata notifications. To change your notifications preferences, click on this link:") }}
+{{ _("Visit {site_url}/dashboard to see to see more details in DMS.").format(site_url=g.site_url) }}
+{{ _("You can change your notification settings here:") }}
 {{ g.site_url + '/user/edit' }}
 
