@@ -1,5 +1,7 @@
 import pytest
-from ckan.tests import helpers, factories
+from ckan.tests import helpers
+from ckan.tests import factories as ckan_factories
+from ckanext.dataset_subscriptions.tests import factories
 
 
 @pytest.mark.usefixtures("clean_db")
@@ -17,12 +19,8 @@ def test_user_create_supports_plugin_extras(sysadmin_context):
 
     created_user = helpers.call_action('user_create', context=sysadmin_context, **user_dict)
 
-    assert created_user["plugin_extras"] == {
-        "dataset_subscriptions": {
-            "phonenumber": 123,
-            "activity_streams_whatsapp_notifications": True
-        }
-    }
+    for key in ["phonenumber", "activity_streams_whatsapp_notifications"]:
+        assert created_user[key] == user_dict[key]
 
 
 @pytest.mark.usefixtures("clean_db")
@@ -34,19 +32,16 @@ def test_user_update_supports_plugin_extras(sysadmin_context):
         "activity_streams_whatsapp_notifications": True
         }
     }
-    updated_user = helpers.call_action('user_update', context=sysadmin_context, **user_dict)
+    helpers.call_action('user_update', **user_dict)
+    updated_user = helpers.call_action('user_show', context=sysadmin_context, include_plugin_extras=True, **user_dict)
 
-    assert updated_user["plugin_extras"] == {
-        "dataset_subscriptions": {
-            "phonenumber": 123,
-            "activity_streams_whatsapp_notifications": True
-        }
-    }
+    for key in ["phonenumber", "activity_streams_whatsapp_notifications"]:
+        assert updated_user[key] == user_dict[key]
 
 
 @pytest.fixture
 def sysadmin_context():
-    sysadmin = factories.Sysadmin()
+    sysadmin = ckan_factories.Sysadmin()
     # helpers.call_action sets 'ignore_auth' to True by default
     context = {'user': sysadmin['name'], 'ignore_auth': False}
     return context
