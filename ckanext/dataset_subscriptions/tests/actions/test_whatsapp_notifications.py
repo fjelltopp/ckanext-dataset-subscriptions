@@ -52,9 +52,13 @@ def sysadmin_context():
 @pytest.mark.ckan_config('ckan.plugins')
 @pytest.mark.usefixtures("with_plugins")
 @pytest.mark.usefixtures("clean_db")
-def create_user_with_resources(with_activity):
+def create_user_with_resources(with_activity, with_notifications_enabled):
+    if with_notifications_enabled:
+        notifications_enabled = True
+    else:
+        notifications_enabled = False
     subscribed_user = factories.User(name='user1',
-                                     activity_streams_whatsapp_notifications=True,
+                                     activity_streams_whatsapp_notifications=notifications_enabled,
                                      phonenumber="+1234")
     active_user = factories.User(name='user2')
     organization = ckan_factories.Organization(
@@ -82,8 +86,16 @@ def create_user_with_resources(with_activity):
 
 @pytest.mark.usefixtures("clean_db")
 @pytest.mark.usefixtures("with_plugins")
+def test_if_whatsapp_notifications_disabled():
+    user = create_user_with_resources(with_activity=True, with_notifications_enabled=False)
+    phonenumber = whatsapp_notifications.get_phonenumber(user)
+    assert phonenumber is False
+
+
+@pytest.mark.usefixtures("clean_db")
+@pytest.mark.usefixtures("with_plugins")
 def test_if_whatsapp_notifications_enabled():
-    user = create_user_with_resources(with_activity=False)
+    user = create_user_with_resources(with_activity=True, with_notifications_enabled=True)
     phonenumber = whatsapp_notifications.get_phonenumber(user)
     assert phonenumber == "+1234"
 
@@ -93,7 +105,7 @@ def test_if_whatsapp_notifications_enabled():
 @pytest.mark.usefixtures("with_plugins")
 @mock.patch('ckanext.dataset_subscriptions.actions.whatsapp_notifications.client.messages.create')
 def test_if_notifications_is_generated(create_message_mock):
-    create_user_with_resources(with_activity=True)
+    create_user_with_resources(with_activity=True, with_notifications_enabled=True)
     expected_sid = 'SM87105da94bff44b999e4e6eb90d8eb6a'
     create_message_mock.return_value.sid = expected_sid
     sid = helpers.call_action("send_whatsapp_notifications")
