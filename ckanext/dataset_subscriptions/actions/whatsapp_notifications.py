@@ -1,12 +1,20 @@
 import copy
-import os
+# import os
+import logging
 from ckan.plugins import toolkit
 import ckan.lib.base as base
 import ckan.logic as logic
 import ckan.model as model
 from twilio.rest import Client
+from twilio.base.exceptions import TwilioRestException
 from datetime import timedelta, datetime
 from ckanext.dataset_subscriptions import actions
+
+
+ACCOUNT_SID = toolkit.config.get('ckanext.dataset_subscriptions.twilio_account_sid')
+AUTH_TOKEN = toolkit.config.get('ckanext.dataset_subscriptions.twilio_auth_token')
+SENDER_NR = toolkit.config.get('ckanext.dataset_subscriptions.whatsapp_sender_nr')
+client = Client(ACCOUNT_SID, AUTH_TOKEN)
 
 
 CUSTOM_FIELDS = [
@@ -119,7 +127,7 @@ def send_whatsapp_notifications(context, data_dict):
         user = logic.get_action('user_show')(context, {'id': user['id'],
                                                        'include_plugin_extras': False})
         if get_phonenumber(user):
-            prepare_whatsapp_notifications(user)
+            return prepare_whatsapp_notifications(user)
 
 
 def prepare_whatsapp_notifications(user):
@@ -132,7 +140,7 @@ def prepare_whatsapp_notifications(user):
     activity_stream_last_viewed = (
             model.Dashboard.get(user['id']).activity_stream_last_viewed)
     since = max(whatsapp_notifications_since, activity_stream_last_viewed)
-    dms_whatsapp_notification_provider(user, since)
+    return dms_whatsapp_notification_provider(user, since)
 
 
 def dms_whatsapp_notification_provider(user_dict, since):
@@ -155,11 +163,7 @@ def dms_whatsapp_notification_provider(user_dict, since):
 
 
 def send_whatsapp_notification(activities, phonenumber):
-    account_sid = toolkit.config.get('ckanext.dataset_subscriptions.twilio_account_sid')
-    auth_token = toolkit.config.get('ckanext.dataset_subscriptions.twilio_auth_token')
-    sender_nr = toolkit.config.get('ckanext.dataset_subscriptions.whatsapp_sender_nr')
-    client = Client(account_sid, auth_token)
-    from_nr = "whatsapp:" + sender_nr
+    from_nr = "whatsapp:" + SENDER_NR
     to_nr = "whatsapp:" + phonenumber
     header = toolkit.ungettext(
         "{n} dataset you're following got recently updated in {site_title}",
@@ -170,10 +174,13 @@ def send_whatsapp_notification(activities, phonenumber):
     message_body = base.render(
             'dataset-subscriptions_whatsapp_body.j2',
             extra_vars={'activities': activities, 'header': header})
-    message = client.messages.create(
-                            from_=from_nr,
-                            body=message_body,
-                            to=to_nr
-                            )
-    print(message.sid)
+    try:
+        message = client.messages.create(
+                                from_=from_nr,
+                                body=message_body,
+                                to=to_nr
+                                )
+    except TwilioRestException as e:
+        print('Whatsapp message send error: ' + e)
+        return
     return message.sid
