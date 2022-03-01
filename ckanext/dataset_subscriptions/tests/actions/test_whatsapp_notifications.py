@@ -88,15 +88,21 @@ def create_user_with_resources(with_activity, with_notifications_enabled):
 @pytest.mark.usefixtures("with_plugins")
 def test_if_whatsapp_notifications_disabled():
     user = create_user_with_resources(with_activity=True, with_notifications_enabled=False)
-    phonenumber = whatsapp_notifications.get_phonenumber(user)
-    assert phonenumber is False
+    if whatsapp_notifications.whatsapp_notifications_enabled(user):
+        phonenumber = whatsapp_notifications.get_phonenumber(user)
+    else:
+        phonenumber = None
+    assert phonenumber is None
 
 
 @pytest.mark.usefixtures("clean_db")
 @pytest.mark.usefixtures("with_plugins")
 def test_if_whatsapp_notifications_enabled():
     user = create_user_with_resources(with_activity=True, with_notifications_enabled=True)
-    phonenumber = whatsapp_notifications.get_phonenumber(user)
+    if whatsapp_notifications.whatsapp_notifications_enabled(user):
+        phonenumber = whatsapp_notifications.get_phonenumber(user)
+    else:
+        phonenumber = None
     assert phonenumber == "+1234"
 
 
@@ -104,7 +110,7 @@ def test_if_whatsapp_notifications_enabled():
 @pytest.mark.usefixtures("clean_db")
 @pytest.mark.usefixtures("with_plugins")
 @mock.patch('ckanext.dataset_subscriptions.actions.whatsapp_notifications.client.messages.create')
-def test_if_notifications_is_generated(create_message_mock):
+def test_if_notifications_are_generated(create_message_mock):
     create_user_with_resources(with_activity=True, with_notifications_enabled=True)
     expected_sid = 'SM87105da94bff44b999e4e6eb90d8eb6a'
     create_message_mock.return_value.sid = expected_sid
