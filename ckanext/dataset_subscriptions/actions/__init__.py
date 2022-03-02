@@ -44,7 +44,6 @@ def dms_notification_provider(user_dict, since):
 def dms_notifications_for_activities(activities, user_dict):
     if not activities:
         return []
-
     if not user_dict.get('activity_streams_email_notifications'):
         return []
     subject = toolkit.ungettext(

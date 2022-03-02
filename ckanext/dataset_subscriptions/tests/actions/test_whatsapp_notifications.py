@@ -86,24 +86,20 @@ def create_user_with_resources(with_activity, with_notifications_enabled):
 
 @pytest.mark.usefixtures("clean_db")
 @pytest.mark.usefixtures("with_plugins")
-def test_if_whatsapp_notifications_disabled():
-    user = create_user_with_resources(with_activity=True, with_notifications_enabled=False)
-    if whatsapp_notifications.whatsapp_notifications_enabled(user):
-        phonenumber = whatsapp_notifications.get_phonenumber(user)
-    else:
-        phonenumber = None
-    assert phonenumber is None
+@pytest.mark.parametrize("activity,notifications,expected_phonenumber", [(True, False, "+1234"), (True, True, "+1234")])
+def test_get_phonenumber(activity, notifications, expected_phonenumber):
+    user = create_user_with_resources(with_activity=activity, with_notifications_enabled=notifications)
+    phonenumber = whatsapp_notifications.get_phonenumber(user)
+    assert phonenumber == expected_phonenumber
 
 
 @pytest.mark.usefixtures("clean_db")
 @pytest.mark.usefixtures("with_plugins")
-def test_if_whatsapp_notifications_enabled():
-    user = create_user_with_resources(with_activity=True, with_notifications_enabled=True)
-    if whatsapp_notifications.whatsapp_notifications_enabled(user):
-        phonenumber = whatsapp_notifications.get_phonenumber(user)
-    else:
-        phonenumber = None
-    assert phonenumber == "+1234"
+@pytest.mark.parametrize("activity,notifications", [(True, False), (True, True)])
+def test_whatsapp_notifications_disabled_enabled(activity, notifications):
+    user = create_user_with_resources(with_activity=activity, with_notifications_enabled=notifications)
+    notifications_enabled = whatsapp_notifications.whatsapp_notifications_enabled(user)
+    assert notifications_enabled == notifications
 
 
 @pytest.mark.usefixtures("with_request_context")
