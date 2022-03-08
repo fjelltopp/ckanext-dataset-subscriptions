@@ -1,0 +1,11 @@
+{% set num = activities|length %}
+{{ _(header) }}
+
+{% for activity in activities %}
+  {{ _("{count}. Dataset title: {title}").format(count=loop.index, title=activity.data.package.title) }}
+  {{ g.site_url + '/dataset/' + activity.dataset_name }}
+{% endfor %}
+{{ _("Visit {site_url}/dashboard to see to see more details in DMS.").format(site_url=g.site_url) }}
+{{ _("You can change your notification settings here:") }}
+{{ g.site_url + '/user/edit' }}
+

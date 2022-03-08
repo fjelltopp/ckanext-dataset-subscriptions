@@ -1,12 +1,12 @@
 import ckan.plugins.toolkit as toolkit
 import ckan.logic as logic
 from ckan.lib.email_notifications import send_notification
+import ckanext.dataset_subscriptions.helpers as helpers
 import ckan.lib.email_notifications as email_notifications
 import ckan.model as model
 import ckan.lib.base as base
 from ckan.common import config
 import unihandecode
-import datetime
 
 
 @toolkit.chained_action
@@ -24,24 +24,6 @@ def latin_username_send_notification(user, email_dict):
     return send_notification(user, email_dict)
 
 
-def _add_dataset_name_to_activity_list(activity_list, context):
-    for index, activity in enumerate(activity_list):
-        object_id = activity['object_id']
-        dataset = toolkit.get_action('package_show')(
-                    context, {'id': object_id})
-        dataset_name = dataset['name']
-        activity_list[index]['dataset_name'] = dataset_name
-    return activity_list
-
-
-def _filter_out_old_activites(activity_list, since):
-    strptime = datetime.datetime.strptime
-    fmt = '%Y-%m-%dT%H:%M:%S.%f'
-    activity_list = [activity for activity in activity_list
-                     if strptime(activity['timestamp'], fmt) > since]
-    return activity_list
-
-
 def dms_notification_provider(user_dict, since):
     context = {'model': model, 'session': model.Session,
                'user': user_dict['id']}
@@ -51,18 +33,17 @@ def dms_notification_provider(user_dict, since):
                              and 'package' in activity['activity_type']]
     # We want a notification per changed dataset, not a list of all changes
     timestamp_sorted_activity_list = sorted(dataset_activity_list,
-                                            key = lambda item: item['timestamp'])
+                                            key=lambda item: item['timestamp'])
     deduplicated_activity_list = list({item["object_id"]:
                                        item for item in timestamp_sorted_activity_list}.values())
-    activity_list_with_dataset_name = _add_dataset_name_to_activity_list(deduplicated_activity_list, context)
-    recent_activity_list = _filter_out_old_activites(activity_list_with_dataset_name, since)
+    activity_list_with_dataset_name = helpers.add_dataset_name_to_activity_list(deduplicated_activity_list, context)
+    recent_activity_list = helpers.filter_out_old_activites(activity_list_with_dataset_name, since)
     return dms_notifications_for_activities(recent_activity_list, user_dict)
 
 
 def dms_notifications_for_activities(activities, user_dict):
     if not activities:
         return []
-
     if not user_dict.get('activity_streams_email_notifications'):
         return []
     subject = toolkit.ungettext(
