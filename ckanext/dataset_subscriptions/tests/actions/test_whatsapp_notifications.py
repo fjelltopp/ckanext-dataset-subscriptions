@@ -86,7 +86,7 @@ def create_user_with_resources(with_activity, with_notifications_enabled):
 
 @pytest.mark.usefixtures("clean_db")
 @pytest.mark.usefixtures("with_plugins")
-@pytest.mark.parametrize("notification_enabled", [(False), (True)])
+@pytest.mark.parametrize("notifications_enabled", [(False), (True)])
 def test_get_phonenumber(notifications_enabled):
     user = create_user_with_resources(with_activity=True, with_notifications_enabled=notifications_enabled)
     phonenumber = whatsapp_notifications.get_phonenumber(user)
