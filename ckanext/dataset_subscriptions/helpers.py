@@ -9,6 +9,12 @@ def add_dataset_name_to_activity_list(activity_list, context):
                     context, {'id': object_id})
         dataset_name = dataset['name']
         activity_list[index]['dataset_name'] = dataset_name
+        if dataset['groups']:
+            dataset_groups = dataset['groups']
+            activity_list[index]['dataset_groups'] = dataset_groups
+        if dataset['extras']:
+            dataset_extras = dataset['extras']
+            activity_list[index]['dataset_extras'] = dataset_extras
     return activity_list
 
 

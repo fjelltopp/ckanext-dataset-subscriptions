@@ -176,8 +176,8 @@ def send_whatsapp_notification(activities, phonenumber):
     from_nr = "whatsapp:" + SENDER_NR
     to_nr = "whatsapp:" + phonenumber
     header = toolkit.ungettext(
-        "{n} dataset you're following got recently updated in {site_title}",
-        "{n} datasets you're following got recently updated in {site_title}",
+        "{n} dataset have recently been uploaded in {site_title}",
+        "{n} datasets have recently been uploaded in {site_title}",
         len(activities)).format(
                 site_title=toolkit.config.get('ckan.site_title'),
                 n=len(activities))

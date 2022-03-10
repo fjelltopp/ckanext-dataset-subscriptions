@@ -47,8 +47,8 @@ def dms_notifications_for_activities(activities, user_dict):
     if not user_dict.get('activity_streams_email_notifications'):
         return []
     subject = toolkit.ungettext(
-        "{n} new notification from {site_title}",
-        "{n} new notifications from {site_title}",
+        "{n} new notification from Department of HIV and AIDS Document Management System",
+        "{n} new notifications from Department of HIV and AIDS Document Management System",
         len(activities)).format(
                 site_title=config.get('ckan.site_title'),
                 n=len(activities))
