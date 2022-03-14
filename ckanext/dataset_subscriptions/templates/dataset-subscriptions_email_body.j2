@@ -3,16 +3,16 @@
 
 {% for activity in activities -%}
   {% if activity.dataset_groups is defined -%}
-    {% set group_name = activity.dataset_groups[0].title -%}
+    {% set group_name = activity.dataset_groups[0].title + ' | '-%}
   {% else -%}
-    {% set group_name = "No group" -%}
+    {% set group_name = "" -%}
   {% endif -%}
   {% if activity.dataset_extras is defined -%}
-    {% set program_area = activity.dataset_extras[0].value -%}
+    {% set program_area = activity.dataset_extras[0].value + ' | ' -%}
   {% else -%}
-    {% set program_area = "No program area" -%}
+    {% set program_area = "" -%}
   {% endif -%}
-  {{ _("{count}. {group_name} | {program_area} | {title}").format(count=loop.index, title=activity.data.package.title,
+  {{ _("{count}. {group_name}{program_area}{title}").format(count=loop.index, title=activity.data.package.title,
   group_name=group_name, program_area=program_area) }}
   {{ g.site_url + '/dataset/' + activity.dataset_name }}
 {% endfor %}
