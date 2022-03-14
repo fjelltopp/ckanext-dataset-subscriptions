@@ -117,12 +117,14 @@ def _validate_plugin_extras(extras):
 def whatsapp_notifications_enabled(user_dict):
     if "activity_streams_whatsapp_notifications" in user_dict and "phonenumber" in user_dict:
         if user_dict["activity_streams_whatsapp_notifications"] and user_dict["phonenumber"]:
+            print(user_dict["phonenumber"])
             return True
     return False
 
 
 def get_phonenumber(user_dict):
     phonenumber = user_dict["phonenumber"]
+    print(phonenumber)
     return phonenumber
 
 
@@ -130,11 +132,12 @@ def send_whatsapp_notifications(context, data_dict):
     context = {'model': model, 'session': model.Session, 'ignore_auth': True}
     users = logic.get_action('user_list')(context, {'all_fields': True})
     for user in users:
+        print(user)
         user = logic.get_action('user_show')(context, {'id': user['id'],
                                                        'include_plugin_extras': False})
         if whatsapp_notifications_enabled:
             get_phonenumber(user)
-            return prepare_whatsapp_notifications(user)
+            prepare_whatsapp_notifications(user)
 
 
 def _whatsapp_notification_time_delta_utc():
@@ -175,6 +178,7 @@ def dms_whatsapp_notification_provider(user_dict, since):
 def send_whatsapp_notification(activities, phonenumber):
     from_nr = "whatsapp:" + SENDER_NR
     to_nr = "whatsapp:" + phonenumber
+    nr_of_datasets_to_display = toolkit.config.get('ckanext.dataset_subscriptions.whatsapp_nr_of_datasets_to_display', 2)
     header = toolkit.ungettext(
         "{n} dataset have recently been uploaded in {site_title}",
         "{n} datasets have recently been uploaded in {site_title}",
@@ -183,7 +187,7 @@ def send_whatsapp_notification(activities, phonenumber):
                 n=len(activities))
     message_body = base.render(
             'dataset-subscriptions_whatsapp_body.j2',
-            extra_vars={'activities': activities, 'header': header})
+            extra_vars={'activities': activities, 'header': header, 'nr_of_datasets_to_display': nr_of_datasets_to_display})
     try:
         message = client.messages.create(
                                 from_=from_nr,

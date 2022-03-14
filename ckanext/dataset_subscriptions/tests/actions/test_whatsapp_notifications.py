@@ -110,6 +110,7 @@ def test_if_notifications_are_generated(create_message_mock):
     create_user_with_resources(with_activity=True, with_notifications_enabled=True)
     expected_sid = 'SM87105da94bff44b999e4e6eb90d8eb6a'
     create_message_mock.return_value.sid = expected_sid
+    # FIX NEEDED
     sid = helpers.call_action("send_whatsapp_notifications")
     assert create_message_mock.called is True
     assert sid == expected_sid
