@@ -2,18 +2,10 @@
 {% set loop_max = nr_of_datasets_to_display -1 -%}
 {{ _(header) }}
 {% for activity in activities[0:nr_of_datasets_to_display] -%}
-{% if activity.dataset_groups is defined -%}
-    {% set group_name = activity.dataset_groups[0].title + ' | ' -%}
-{% else -%}
-    {% set group_name = "" -%}
-{% endif -%}
-{% if activity.dataset_extras is defined -%}
-    {% set program_area = activity.dataset_extras[0].value + ' | ' -%}
-{% else -%}
-    {% set program_area = "" -%}
-{% endif -%}
-    {{ _("* {count}. {group_name}{program_area}{title} *").format(count=loop.index, title=activity.data.package.title,
-    group_name=group_name, program_area=program_area) }}
+{% set group_name = activity.dataset_groups.title -%}
+{% set program_area = activity.dataset_extras.value -%}
+{% set counter = loop.index -%}
+{{ counter|string + ". " + group_name + program_area + activity.data.package.title }}
 {% set datasets_left = num_of_datasets - loop.index -%}
 {% if loop.index == nr_of_datasets_to_display and num_of_datasets > nr_of_datasets_to_display %}
 {{ _("And {datasets} more...").format(datasets=datasets_left) }}

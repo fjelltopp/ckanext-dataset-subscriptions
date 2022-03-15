@@ -117,27 +117,26 @@ def _validate_plugin_extras(extras):
 def whatsapp_notifications_enabled(user_dict):
     if "activity_streams_whatsapp_notifications" in user_dict and "phonenumber" in user_dict:
         if user_dict["activity_streams_whatsapp_notifications"] and user_dict["phonenumber"]:
-            print(user_dict["phonenumber"])
             return True
     return False
 
 
 def get_phonenumber(user_dict):
     phonenumber = user_dict["phonenumber"]
-    print(phonenumber)
     return phonenumber
 
 
 def send_whatsapp_notifications(context, data_dict):
     context = {'model': model, 'session': model.Session, 'ignore_auth': True}
     users = logic.get_action('user_list')(context, {'all_fields': True})
+    notification_sids = []
     for user in users:
-        print(user)
         user = logic.get_action('user_show')(context, {'id': user['id'],
                                                        'include_plugin_extras': False})
         if whatsapp_notifications_enabled:
             get_phonenumber(user)
-            prepare_whatsapp_notifications(user)
+            notification_sids.append(prepare_whatsapp_notifications(user))
+    return notification_sids
 
 
 def _whatsapp_notification_time_delta_utc():
@@ -168,7 +167,7 @@ def dms_whatsapp_notification_provider(user_dict, since):
                                             key=lambda item: item['timestamp'])
     deduplicated_activity_list = list({item["object_id"]:
                                        item for item in timestamp_sorted_activity_list}.values())
-    activity_list_with_dataset_name = helpers.add_dataset_name_to_activity_list(deduplicated_activity_list, context)
+    activity_list_with_dataset_name = helpers.add_dataset_details_to_activity_list(deduplicated_activity_list, context)
     recent_activity_list = helpers.filter_out_old_activites(activity_list_with_dataset_name, since)
     if recent_activity_list:
         user_phonenumber = get_phonenumber(user_dict)
@@ -180,8 +179,8 @@ def send_whatsapp_notification(activities, phonenumber):
     to_nr = "whatsapp:" + phonenumber
     nr_of_datasets_to_display = toolkit.config.get('ckanext.dataset_subscriptions.whatsapp_nr_of_datasets_to_display', 2)
     header = toolkit.ungettext(
-        "{n} dataset have recently been uploaded in {site_title}",
-        "{n} datasets have recently been uploaded in {site_title}",
+        "{n} dataset have recently been updated in {site_title}",
+        "{n} datasets have recently been updated in {site_title}",
         len(activities)).format(
                 site_title=toolkit.config.get('ckan.site_title'),
                 n=len(activities))

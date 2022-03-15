@@ -36,7 +36,7 @@ def dms_notification_provider(user_dict, since):
                                             key=lambda item: item['timestamp'])
     deduplicated_activity_list = list({item["object_id"]:
                                        item for item in timestamp_sorted_activity_list}.values())
-    activity_list_with_dataset_name = helpers.add_dataset_name_to_activity_list(deduplicated_activity_list, context)
+    activity_list_with_dataset_name = helpers.add_dataset_details_to_activity_list(deduplicated_activity_list, context)
     recent_activity_list = helpers.filter_out_old_activites(activity_list_with_dataset_name, since)
     return dms_notifications_for_activities(recent_activity_list, user_dict)
 
