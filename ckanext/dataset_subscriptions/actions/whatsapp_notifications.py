@@ -196,6 +196,6 @@ def send_whatsapp_notification(activities, phonenumber):
                                 to=to_nr
                                 )
     except TwilioRestException:
-        logger.exception("Failed to send whatsapp message", exec_info=True)
+        logger.exception("Failed to send whatsapp message", exc_info=True)
         return
     return message.sid
