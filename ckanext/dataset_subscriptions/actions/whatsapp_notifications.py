@@ -8,6 +8,7 @@ from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
 from datetime import timedelta, datetime
 from ckanext.dataset_subscriptions import helpers
+from ckan.common import request
 
 
 logger = logging.getLogger(__name__)
@@ -127,6 +128,7 @@ def get_phonenumber(user_dict):
 
 
 def send_whatsapp_notifications(context, data_dict):
+    toolkit.check_access('send_email_notifications', context, data_dict)
     context = {'model': model, 'session': model.Session, 'ignore_auth': True}
     users = logic.get_action('user_list')(context, {'all_fields': True})
     notification_sids = []
@@ -194,6 +196,6 @@ def send_whatsapp_notification(activities, phonenumber):
                                 to=to_nr
                                 )
     except TwilioRestException:
-        logger.exception("Failed to send whatsapp message", exec_info=True)
+        logger.exception("Failed to send whatsapp message", exc_info=True)
         return
     return message.sid
