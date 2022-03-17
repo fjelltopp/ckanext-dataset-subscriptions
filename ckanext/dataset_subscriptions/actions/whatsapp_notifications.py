@@ -116,9 +116,8 @@ def _validate_plugin_extras(extras):
 
 
 def whatsapp_notifications_enabled(user_dict):
-    if "activity_streams_whatsapp_notifications" in user_dict and "phonenumber" in user_dict:
-        if user_dict["activity_streams_whatsapp_notifications"] and user_dict["phonenumber"]:
-            return True
+    if user_dict.get("activity_streams_whatsapp_notifications") and user_dict.get("phonenumber"):
+        return True
     return False
 
 
@@ -135,7 +134,7 @@ def send_whatsapp_notifications(context, data_dict):
     for user in users:
         user = logic.get_action('user_show')(context, {'id': user['id'],
                                                        'include_plugin_extras': False})
-        if whatsapp_notifications_enabled:
+        if whatsapp_notifications_enabled(user):
             get_phonenumber(user)
             notification_sids.append(prepare_whatsapp_notifications(user))
     return notification_sids
