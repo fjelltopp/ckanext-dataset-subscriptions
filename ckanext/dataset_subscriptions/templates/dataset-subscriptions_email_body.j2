@@ -1,9 +1,10 @@
-{% set num = activities|length %}
 {{ _("Here's a list of recently updated datasets you're following in DMS:") }}
 
-{% for activity in activities %}
-  {{ _("{count}. Dataset title: {title}").format(count=loop.index, title=activity.data.package.title) }}
-  {{ g.site_url + '/dataset/' + activity.dataset_name }}
+{% for activity in activities -%}
+{% set group_name = activity.dataset_groups.title -%}
+{% set program_area = activity.dataset_extras.value -%}
+{{ loop.index|string + ". " + group_name + program_area + activity.data.package.title }}
+{{ g.site_url + '/dataset/' + activity.dataset_name }}
 {% endfor %}
 {{ _("Visit {site_url}/dashboard to see your notifications directly in DMS.").format(site_url=g.site_url) }}
 

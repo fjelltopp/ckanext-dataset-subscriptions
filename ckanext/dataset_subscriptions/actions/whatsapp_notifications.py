@@ -129,12 +129,14 @@ def get_phonenumber(user_dict):
 def send_whatsapp_notifications(context, data_dict):
     context = {'model': model, 'session': model.Session, 'ignore_auth': True}
     users = logic.get_action('user_list')(context, {'all_fields': True})
+    notification_sids = []
     for user in users:
         user = logic.get_action('user_show')(context, {'id': user['id'],
                                                        'include_plugin_extras': False})
         if whatsapp_notifications_enabled:
             get_phonenumber(user)
-            return prepare_whatsapp_notifications(user)
+            notification_sids.append(prepare_whatsapp_notifications(user))
+    return notification_sids
 
 
 def _whatsapp_notification_time_delta_utc():
@@ -165,7 +167,7 @@ def dms_whatsapp_notification_provider(user_dict, since):
                                             key=lambda item: item['timestamp'])
     deduplicated_activity_list = list({item["object_id"]:
                                        item for item in timestamp_sorted_activity_list}.values())
-    activity_list_with_dataset_name = helpers.add_dataset_name_to_activity_list(deduplicated_activity_list, context)
+    activity_list_with_dataset_name = helpers.add_dataset_details_to_activity_list(deduplicated_activity_list, context)
     recent_activity_list = helpers.filter_out_old_activites(activity_list_with_dataset_name, since)
     if recent_activity_list:
         user_phonenumber = get_phonenumber(user_dict)
@@ -175,15 +177,16 @@ def dms_whatsapp_notification_provider(user_dict, since):
 def send_whatsapp_notification(activities, phonenumber):
     from_nr = "whatsapp:" + SENDER_NR
     to_nr = "whatsapp:" + phonenumber
+    nr_of_datasets_to_display = toolkit.config.get('ckanext.dataset_subscriptions.whatsapp_nr_of_datasets_to_display', 2)
     header = toolkit.ungettext(
-        "{n} dataset you're following got recently updated in {site_title}",
-        "{n} datasets you're following got recently updated in {site_title}",
+        "{n} dataset have recently been updated in {site_title}",
+        "{n} datasets have recently been updated in {site_title}",
         len(activities)).format(
                 site_title=toolkit.config.get('ckan.site_title'),
                 n=len(activities))
     message_body = base.render(
             'dataset-subscriptions_whatsapp_body.j2',
-            extra_vars={'activities': activities, 'header': header})
+            extra_vars={'activities': activities, 'header': header, 'nr_of_datasets_to_display': nr_of_datasets_to_display})
     try:
         message = client.messages.create(
                                 from_=from_nr,

@@ -36,7 +36,7 @@ def dms_notification_provider(user_dict, since):
                                             key=lambda item: item['timestamp'])
     deduplicated_activity_list = list({item["object_id"]:
                                        item for item in timestamp_sorted_activity_list}.values())
-    activity_list_with_dataset_name = helpers.add_dataset_name_to_activity_list(deduplicated_activity_list, context)
+    activity_list_with_dataset_name = helpers.add_dataset_details_to_activity_list(deduplicated_activity_list, context)
     recent_activity_list = helpers.filter_out_old_activites(activity_list_with_dataset_name, since)
     return dms_notifications_for_activities(recent_activity_list, user_dict)
 
@@ -47,8 +47,8 @@ def dms_notifications_for_activities(activities, user_dict):
     if not user_dict.get('activity_streams_email_notifications'):
         return []
     subject = toolkit.ungettext(
-        "{n} new notification from {site_title}",
-        "{n} new notifications from {site_title}",
+        "{n} new notification from Department of HIV and AIDS Document Management System",
+        "{n} new notifications from Department of HIV and AIDS Document Management System",
         len(activities)).format(
                 site_title=config.get('ckan.site_title'),
                 n=len(activities))
