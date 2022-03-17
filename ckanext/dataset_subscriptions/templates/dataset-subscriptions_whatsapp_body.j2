@@ -5,7 +5,7 @@
 {% set group_name = activity.dataset_groups.title -%}
 {% set program_area = activity.dataset_extras.value -%}
 {% set counter = loop.index -%}
-{{ "*"counter|string + ". " + group_name + program_area + activity.data.package.title"*" }}
+{{ "*" + counter|string + ". " + group_name + program_area + activity.data.package.title + "*" }}
 
 {% set datasets_left = num_of_datasets - loop.index %}
 {% if loop.index == nr_of_datasets_to_display and num_of_datasets > nr_of_datasets_to_display %}
