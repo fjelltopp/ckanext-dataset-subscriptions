@@ -111,5 +111,6 @@ def test_if_notifications_are_generated(create_message_mock, sysadmin_context):
     expected_sid = 'SM87105da94bff44b999e4e6eb90d8eb6a'
     create_message_mock.return_value.sid = expected_sid
     sid = helpers.call_action("send_whatsapp_notifications")
+    print(sid)
     assert create_message_mock.called is True
     assert sid[0] == expected_sid
