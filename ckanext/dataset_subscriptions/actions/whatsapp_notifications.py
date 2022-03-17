@@ -8,6 +8,10 @@ from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
 from datetime import timedelta, datetime
 from ckanext.dataset_subscriptions import helpers
+from ckan.common import _, request
+
+
+_check_access = logic.check_access
 
 
 logger = logging.getLogger(__name__)
@@ -127,6 +131,11 @@ def get_phonenumber(user_dict):
 
 
 def send_whatsapp_notifications(context, data_dict):
+    # If paste.command_request is True then this function has been called
+    # by a `paster post ...` command not a real HTTP request, so skip the
+    # authorization.
+    if not request.environ.get('paste.command_request'):
+        _check_access('send_email_notifications', context, data_dict)
     context = {'model': model, 'session': model.Session, 'ignore_auth': True}
     users = logic.get_action('user_list')(context, {'all_fields': True})
     notification_sids = []
