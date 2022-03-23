@@ -16,13 +16,13 @@ logger = logging.getLogger(__name__)
 
 ACCOUNT_SID = toolkit.config.get('ckanext.dataset_subscriptions.twilio_account_sid')
 AUTH_TOKEN = toolkit.config.get('ckanext.dataset_subscriptions.twilio_auth_token')
-SENDER_NR = toolkit.config.get('ckanext.dataset_subscriptions.whatsapp_sender_nr')
+SENDER_NR = toolkit.config.get('ckanext.dataset_subscriptions.sms_sender_nr')
 client = Client(ACCOUNT_SID, AUTH_TOKEN)
 
 
 CUSTOM_FIELDS = [
     {'name': 'phonenumber', 'default': ''},
-    {'name': 'activity_streams_whatsapp_notifications', 'default': False},
+    {'name': 'activity_streams_sms_notifications', 'default': False},
 ]
 
 DATASET_SUBSCRIPTIONS = 'dataset_subscriptions'
@@ -115,8 +115,8 @@ def _validate_plugin_extras(extras):
     return out_dict
 
 
-def whatsapp_notifications_enabled(user_dict):
-    if user_dict.get("activity_streams_whatsapp_notifications") and user_dict.get("phonenumber"):
+def sms_notifications_enabled(user_dict):
+    if user_dict.get("activity_streams_sms_notifications") and user_dict.get("phonenumber"):
         return True
     return False
 
@@ -126,7 +126,7 @@ def get_phonenumber(user_dict):
     return phonenumber
 
 
-def send_whatsapp_notifications(context, data_dict):
+def send_sms_notifications(context, data_dict):
     toolkit.check_access('send_email_notifications', context, data_dict)
     context = {'model': model, 'session': model.Session, 'ignore_auth': True}
     users = logic.get_action('user_list')(context, {'all_fields': True})
@@ -134,29 +134,29 @@ def send_whatsapp_notifications(context, data_dict):
     for user in users:
         user = logic.get_action('user_show')(context, {'id': user['id'],
                                                        'include_plugin_extras': False})
-        if whatsapp_notifications_enabled(user):
+        if sms_notifications_enabled(user):
             get_phonenumber(user)
-            notification_sids.append(prepare_whatsapp_notifications(user))
+            notification_sids.append(prepare_sms_notifications(user))
     return notification_sids
 
 
-def _whatsapp_notification_time_delta_utc():
+def _sms_notification_time_delta_utc():
     since_hours = toolkit.config.get(
-            'ckanext.dataset_subscriptions.whatsapp_notifications_hours_since', 1)
+            'ckanext.dataset_subscriptions.sms_notifications_hours_since', 1)
     since_delta = timedelta(hours=int(since_hours))
     since_datetime = (datetime.utcnow() - since_delta)
     return since_datetime
 
 
-def prepare_whatsapp_notifications(user):
-    whatsapp_notifications_since = _whatsapp_notification_time_delta_utc()
+def prepare_sms_notifications(user):
+    sms_notifications_since = _sms_notification_time_delta_utc()
     activity_stream_last_viewed = (
             model.Dashboard.get(user['id']).activity_stream_last_viewed)
-    since = max(whatsapp_notifications_since, activity_stream_last_viewed)
-    return dms_whatsapp_notification_provider(user, since)
+    since = max(sms_notifications_since, activity_stream_last_viewed)
+    return dms_sms_notification_provider(user, since)
 
 
-def dms_whatsapp_notification_provider(user_dict, since):
+def dms_sms_notification_provider(user_dict, since):
     context = {'model': model, 'session': model.Session,
                'user': user_dict['id']}
     activity_list = logic.get_action('dashboard_activity_list')(context, {})
@@ -172,13 +172,13 @@ def dms_whatsapp_notification_provider(user_dict, since):
     recent_activity_list = helpers.filter_out_old_activites(activity_list_with_dataset_name, since)
     if recent_activity_list:
         user_phonenumber = get_phonenumber(user_dict)
-        return send_whatsapp_notification(recent_activity_list, user_phonenumber)
+        return send_sms_notification(recent_activity_list, user_phonenumber)
 
 
-def send_whatsapp_notification(activities, phonenumber):
-    from_nr = "whatsapp:" + SENDER_NR
-    to_nr = "whatsapp:" + phonenumber
-    nr_of_datasets_to_display = toolkit.config.get('ckanext.dataset_subscriptions.whatsapp_nr_of_datasets_to_display', 2)
+def send_sms_notification(activities, phonenumber):
+    from_nr = SENDER_NR
+    to_nr = phonenumber
+    nr_of_datasets_to_display = toolkit.config.get('ckanext.dataset_subscriptions.sms_nr_of_datasets_to_display', 2)
     header = toolkit.ungettext(
         "{n} dataset have recently been updated in {site_title}",
         "{n} datasets have recently been updated in {site_title}",
@@ -186,7 +186,7 @@ def send_whatsapp_notification(activities, phonenumber):
                 site_title=toolkit.config.get('ckan.site_title'),
                 n=len(activities))
     message_body = base.render(
-            'dataset-subscriptions_whatsapp_body.j2',
+            'dataset-subscriptions_sms_body.j2',
             extra_vars={'activities': activities, 'header': header, 'nr_of_datasets_to_display': nr_of_datasets_to_display})
     try:
         message = client.messages.create(
@@ -195,6 +195,6 @@ def send_whatsapp_notification(activities, phonenumber):
                                 to=to_nr
                                 )
     except TwilioRestException:
-        logger.exception("Failed to send whatsapp message", exc_info=True)
+        logger.exception("Failed to send sms message", exc_info=True)
         return
     return message.sid
