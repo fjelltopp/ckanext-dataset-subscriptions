@@ -8,7 +8,6 @@ phone-number-js:
   filter: rjsmin
   output: ckanext-dataset_subscriptions/%(version)s-phone-number.js
   contents:
-    - js/utils.js
     - js/processPhoneNumber.js
 
 user-edit-css:
