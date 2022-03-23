@@ -1,14 +1,18 @@
-# dataset_subscriptions-js:
-#   filter: rjsmin
-#   output: ckanext-dataset_subscriptions/%(version)s-dataset_subscriptions.js
-#   contents:
-#     - js/dataset_subscriptions.js
-#   extra:
-#     preload:
-#       - base/main
+user-edit-js:
+  filter: rjsmin
+  output: ckanext-dataset_subscriptions/%(version)s-user-edit.js
+  contents:
+    - js/intlTelInput.min.js
 
-# dataset_subscriptions-css:
-#   filter: cssrewrite
-#   output: ckanext-dataset_subscriptions/%(version)s-dataset_subscriptions.css
-#   contents:
-#     - css/dataset_subscriptions.css
+phone-number-js:
+  filter: rjsmin
+  output: ckanext-dataset_subscriptions/%(version)s-phone-number.js
+  contents:
+    - js/utils.js
+    - js/processPhoneNumber.js
+
+user-edit-css:
+  filter: cssrewrite
+  output: ckanext-dataset_subscriptions/%(version)s-user-edit.css
+  contents:
+    - css/intlTelInput.css

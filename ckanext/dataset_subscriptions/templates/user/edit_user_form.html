@@ -1,6 +1,9 @@
 {% import 'macros/form.html' as form %}
 
-<form id="user-edit-form" class="dataset-form" method="post" action="{{ action }}" enctype="multipart/form-data">
+{% asset "ckanext-dataset-subscriptions/user-edit-js" %}
+{% asset "ckanext-dataset-subscriptions/user-edit-css" %}
+
+<form id="user-edit-form" class="dataset-form" method="post" action="{{ action }}" onsubmit="process(event)" enctype="multipart/form-data">
   {{ form.errors(error_summary) }}
 
   <fieldset>
@@ -19,7 +22,8 @@
       {{ form.info(helper_text.format(site_title=g.site_title), classes=['info-help-tight']) }}
       {% endcall %}
     {% endif %}
-    {{ form.input('phonenumber', label=_('Phone number'), id='field-phonenumber', type='phonenumber', value=data.phonenumber, error=errors.phonenumber, placeholder=_('eg. +44 123123123'), classes=['control-medium'], is_required=false) }}
+    <div class="alert phonenumber alert-error" style="display: none"></div>
+    {{ form.input('phonenumber', label=_('Phone number'), id='field-phonenumber', type='tel', value=data.phonenumber, error=errors.phonenumber, placeholder=_('eg. +44 123123123'), classes=['control-medium'], is_required=false) }}
     {% call form.checkbox('activity_streams_sms_notifications', label=_('Subscribe to sms notification'), id='field-activity-streams-sms-notifications', value=True, checked=data.activity_streams_sms_notifications) %}
     {% set helper_text = _("You will receive sms notification from {site_title}, e.g. when you have new activities on your dashboard."|string) %}
     {{ form.info(helper_text.format(site_title=g.site_title), classes=['info-help-tight']) }}
@@ -64,3 +68,6 @@
     <button class="btn btn-primary" type="submit" name="save">{{ _('Update Profile') }}</button>
   </div>
 </form>
+
+{% asset "ckanext-dataset-subscriptions/phone-number-js" %}
+
