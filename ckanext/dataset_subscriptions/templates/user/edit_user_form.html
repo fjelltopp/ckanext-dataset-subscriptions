@@ -20,8 +20,8 @@
       {% endcall %}
     {% endif %}
     {{ form.input('phonenumber', label=_('Phone number'), id='field-phonenumber', type='phonenumber', value=data.phonenumber, error=errors.phonenumber, placeholder=_('eg. +44 123123123'), classes=['control-medium'], is_required=false) }}
-    {% call form.checkbox('activity_streams_whatsapp_notifications', label=_('Subscribe to whatsapp notification'), id='field-activity-streams-whatsapp-notifications', value=True, checked=data.activity_streams_whatsapp_notifications) %}
-    {% set helper_text = _("You will receive whatsapp notification from {site_title}, e.g. when you have new activities on your dashboard."|string) %}
+    {% call form.checkbox('activity_streams_sms_notifications', label=_('Subscribe to sms notification'), id='field-activity-streams-sms-notifications', value=True, checked=data.activity_streams_sms_notifications) %}
+    {% set helper_text = _("You will receive sms notification from {site_title}, e.g. when you have new activities on your dashboard."|string) %}
     {{ form.info(helper_text.format(site_title=g.site_title), classes=['info-help-tight']) }}
     {% endcall %}
 
