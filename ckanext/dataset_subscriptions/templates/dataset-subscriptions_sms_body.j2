@@ -3,16 +3,14 @@
 {{ _(header) }}
 {% for activity in activities[0:nr_of_datasets_to_display] -%}
 {% set group_name = activity.dataset_groups.title -%}
-{% set program_area = activity.dataset_extras.value -%}
+{% set program_area = activity.dataset_program_area -%}
 {% set counter = loop.index -%}
-{{ "*" + counter|string + ". " + group_name + program_area + activity.data.package.title + "*" }}
-
-{% set datasets_left = num_of_datasets - loop.index %}
-{% if loop.index == nr_of_datasets_to_display and num_of_datasets > nr_of_datasets_to_display %}
+{{ counter|string + ". " + group_name + program_area + activity.data.package.title }}
+{% set datasets_left = num_of_datasets - loop.index -%}
+{% if loop.index == nr_of_datasets_to_display and num_of_datasets > nr_of_datasets_to_display -%}
 {{ _("And {datasets} more...").format(datasets=datasets_left) }}
 {% endif -%}
 {% endfor -%}
-
 {{ _("Visit {site_url}/dashboard to see to see more details in DMS.").format(site_url=g.site_url) }}
 {{ _("You can change your notification settings here:") }}
 {{ g.site_url + '/user/edit' }}
