@@ -7,10 +7,7 @@ import ckan.model as model
 import ckan.lib.base as base
 from ckan.common import config
 import unihandecode
-import logging
 
-
-logger = logging.getLogger(__name__)
 
 @toolkit.chained_action
 @toolkit.side_effect_free
