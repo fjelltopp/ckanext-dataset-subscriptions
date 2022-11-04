@@ -25,9 +25,8 @@ def latin_username_send_notification(user, email_dict):
 
 
 def dms_notification_provider(user_dict, since):
-    # check if email notifications are enabled for this user, otherwise return empty
     if not user_dict.get('activity_streams_email_notifications'):
-      return []
+        return []
     context = {'model': model, 'session': model.Session,
                'user': user_dict['id']}
     activity_list = logic.get_action('dashboard_activity_list')(context, {})
