@@ -1,12 +1,19 @@
 from ckan.plugins import toolkit
 import datetime
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 def add_dataset_details_to_activity_list(activity_list, context):
     for index, activity in enumerate(activity_list):
         object_id = activity['object_id']
-        dataset = toolkit.get_action('package_show')(
-                    context, {'id': object_id})
+        try:
+            dataset = toolkit.get_action('package_show')(context, {'id': object_id})
+        except Exception:
+            logger.exception(f"Unable to get details of package: {object_id}")
+            return []
         dataset_name = dataset['name']
         activity_list[index]['dataset_name'] = dataset_name
         if dataset.get('groups'):
