@@ -2,7 +2,7 @@ import ckan.plugins.toolkit as toolkit
 import ckan.logic as logic
 from ckanext.activity.email_notifications import send_notification
 import ckanext.dataset_subscriptions.helpers as helpers
-import ckan.activity.email_notifications as email_notifications
+import ckanext.activity.email_notifications as email_notifications
 import ckan.model as model
 import ckan.lib.base as base
 from ckan.common import config
