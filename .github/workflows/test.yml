@@ -44,10 +44,8 @@ jobs:
         sed -i -e 's/use = config:.*/use = config:\/srv\/app\/src\/ckan\/test-core.ini/' test.ini
         echo "Initialising DB"
         ckan -c test.ini db init
+    - name: Run tests
+      run: | 
         echo "Upgrading DB"
         ckan -c test.ini db upgrade
-        psql -Atx postgresql://ckan_default:pass@localhost/ckan_test -c "\d activity"
-        psql -Atx postgresql://ckan_default:pass@localhost/ckan_test -c "ALTER TABLE activity ADD COLUMN permission_labels TEXT[];"
-        psql -Atx postgresql://ckan_default:pass@localhost/ckan_test -c "\d activity"
-    - name: Run tests
-      run: pytest --ckan-ini=test.ini --cov=ckanext.dataset_subscriptions --disable-warnings ckanext/dataset_subscriptions
+        pytest --ckan-ini=test.ini --cov=ckanext.dataset_subscriptions --disable-warnings ckanext/dataset_subscriptions
