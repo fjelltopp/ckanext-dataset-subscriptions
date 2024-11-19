@@ -1,8 +1,6 @@
 from ckan.tests import factories as ckan_factories
 from ckanext.dataset_subscriptions.tests import factories
-
-import ckan.lib.email_notifications as email_notifications
-import ckanext.dataset_subscriptions.actions as actions
+import ckanext.activity.email_notifications as email_notifications
 import ckan.tests.helpers as helpers
 import pytest
 import datetime
