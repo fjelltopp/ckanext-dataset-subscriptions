@@ -48,7 +48,8 @@ jobs:
         ckan -c test.ini db upgrade
         apt-get install -y postgresql-client
         psql -Atx postgresql://ckan_default:pass@postgres/ckan_test -c "\d activity"
-        psql -Atx postgresql://ckan_default:pass@postgres/ckan_test -c "ALTER TABLE activity ADD COLUMN permission_labels TEXT[];"
-        psql -Atx postgresql://ckan_default:pass@postgres/ckan_test -c "\d activity"
+        
     - name: Run tests
-      run: pytest --ckan-ini=test.ini --cov=ckanext.dataset_subscriptions --disable-warnings ckanext/dataset_subscriptions
+      run: |
+        psql -Atx postgresql://ckan_default:pass@postgres/ckan_test -c "\d activity"
+        pytest --ckan-ini=test.ini --cov=ckanext.dataset_subscriptions --disable-warnings ckanext/dataset_subscriptions
