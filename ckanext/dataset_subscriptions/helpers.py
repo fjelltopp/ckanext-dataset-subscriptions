@@ -6,11 +6,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def add_dataset_details_to_activity_list(activity_list, context):
+def add_dataset_details_to_activity_list(activity_list):
     for index, activity in enumerate(activity_list):
         object_id = activity['object_id']
         try:
-            dataset = toolkit.get_action('package_show')(context, {'id': object_id})
+            dataset = toolkit.get_action('package_show')({}, {'id': object_id})
         except Exception:
             logger.exception(f"Unable to get details of package: {object_id}")
             return []
