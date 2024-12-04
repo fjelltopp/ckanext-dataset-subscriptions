@@ -1,5 +1,5 @@
 from ckan.tests import factories as ckan_factories
-from ckanext.dataset_subscriptions.tests import factories
+from ckanext.dataset_subscriptions.tests import factories as plugin_factories
 import ckanext.activity.email_notifications as email_notifications
 import ckan.tests.helpers as helpers
 import pytest
@@ -11,9 +11,11 @@ import datetime
 @pytest.mark.usefixtures("with_plugins")
 @pytest.mark.usefixtures("clean_db")
 def create_user_with_resources(with_activity):
-    subscribed_user = factories.User(name='user1',
-                                     activity_streams_email_notifications=True)
-    active_user = factories.User(name='user2')
+    subscribed_user = plugin_factories.User(
+        name='user1',
+        activity_streams_email_notifications=True
+    )
+    active_user = plugin_factories.User(name='user2')
     organization = ckan_factories.Organization(
         users=[
             {'name': subscribed_user['name'], 'capacity': 'member'},

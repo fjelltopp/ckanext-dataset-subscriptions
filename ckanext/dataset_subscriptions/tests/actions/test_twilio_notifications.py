@@ -2,43 +2,8 @@ import pytest
 from ckan.tests import helpers
 from ckan.tests import factories as ckan_factories
 from ckanext.dataset_subscriptions.tests import factories
-from ckanext.dataset_subscriptions.actions import sms_notifications
+from ckanext.dataset_subscriptions.actions import twilio_notifications
 from unittest import mock
-
-
-@pytest.mark.usefixtures("clean_db")
-@pytest.mark.usefixtures("with_plugins")
-def test_user_create_supports_plugin_extras(sysadmin_context):
-    user_dict = {
-        "name": "test_user_001",
-        "fullname": "Mr. Test User",
-        "password": "fjelltopp",
-        "display_name": "Mr. Test User",
-        "email": "test_user_001@ckan.org",
-        "phonenumber": 123,
-        "activity_streams_sms_notifications": True
-    }
-
-    created_user = helpers.call_action('user_create', context=sysadmin_context, **user_dict)
-
-    for key in ["phonenumber", "activity_streams_sms_notifications"]:
-        assert created_user[key] == user_dict[key]
-
-
-@pytest.mark.usefixtures("clean_db")
-@pytest.mark.usefixtures("with_plugins")
-def test_user_update_supports_plugin_extras(sysadmin_context):
-    user = factories.User()
-    user_dict = {**user, **{
-        "phonenumber": 123,
-        "activity_streams_sms_notifications": True
-        }
-    }
-    helpers.call_action('user_update', **user_dict)
-    updated_user = helpers.call_action('user_show', context=sysadmin_context, include_plugin_extras=True, **user_dict)
-
-    for key in ["phonenumber", "activity_streams_sms_notifications"]:
-        assert updated_user[key] == user_dict[key]
 
 
 @pytest.fixture
@@ -52,11 +17,7 @@ def sysadmin_context():
 @pytest.mark.ckan_config('ckan.plugins')
 @pytest.mark.usefixtures("with_plugins")
 @pytest.mark.usefixtures("clean_db")
-def create_user_with_resources(with_activity, with_notifications_enabled):
-    if with_notifications_enabled:
-        notifications_enabled = True
-    else:
-        notifications_enabled = False
+def create_user_with_resources(with_activity, notifications_enabled):
     subscribed_user = factories.User(name='user1',
                                      activity_streams_sms_notifications=notifications_enabled,
                                      phonenumber="+1234")
@@ -87,25 +48,16 @@ def create_user_with_resources(with_activity, with_notifications_enabled):
 @pytest.mark.usefixtures("clean_db")
 @pytest.mark.usefixtures("with_plugins")
 @pytest.mark.parametrize("notifications_enabled", [(False), (True)])
-def test_get_phonenumber(notifications_enabled):
-    user = create_user_with_resources(with_activity=True, with_notifications_enabled=notifications_enabled)
-    phonenumber = sms_notifications.get_phonenumber(user)
-    assert phonenumber == "+1234"
-
-
-@pytest.mark.usefixtures("clean_db")
-@pytest.mark.usefixtures("with_plugins")
-@pytest.mark.parametrize("notifications_enabled", [(False), (True)])
 def test_sms_notifications_disabled_enabled(notifications_enabled):
-    user = create_user_with_resources(with_activity=True, with_notifications_enabled=notifications_enabled)
-    notifications = sms_notifications.sms_notifications_enabled(user)
+    user = create_user_with_resources(True, notifications_enabled)
+    notifications = twilio_notifications._sms_notifications_enabled(user)
     assert notifications == notifications_enabled
 
 
 @pytest.mark.usefixtures("with_request_context")
 @pytest.mark.usefixtures("clean_db")
 @pytest.mark.usefixtures("with_plugins")
-@mock.patch('ckanext.dataset_subscriptions.actions.sms_notifications.client.messages.create')
+@mock.patch('ckanext.dataset_subscriptions.actions.twilio_notifications.client.messages.create')
 def test_if_notifications_are_generated(create_message_mock, sysadmin_context):
     create_user_with_resources(with_activity=True, with_notifications_enabled=True)
     expected_sid = 'SM87105da94bff44b999e4e6eb90d8eb6a'
