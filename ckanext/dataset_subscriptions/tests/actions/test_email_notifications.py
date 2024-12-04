@@ -6,7 +6,6 @@ import pytest
 import datetime
 
 
-
 @pytest.mark.ckan_config('ckan.plugins')
 @pytest.mark.usefixtures("with_plugins")
 @pytest.mark.usefixtures("clean_db")

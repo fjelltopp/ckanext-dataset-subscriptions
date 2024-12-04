@@ -6,14 +6,6 @@ from ckanext.dataset_subscriptions.actions import twilio_notifications
 from unittest import mock
 
 
-@pytest.fixture
-def sysadmin_context():
-    sysadmin = ckan_factories.Sysadmin()
-    # helpers.call_action sets 'ignore_auth' to True by default
-    context = {'user': sysadmin['name'], 'ignore_auth': False}
-    return context
-
-
 @pytest.mark.ckan_config('ckan.plugins')
 @pytest.mark.usefixtures("with_plugins")
 @pytest.mark.usefixtures("clean_db")
@@ -59,7 +51,7 @@ def test_sms_notifications_disabled_enabled(notifications_enabled):
 @pytest.mark.usefixtures("with_plugins")
 @mock.patch('ckanext.dataset_subscriptions.actions.twilio_notifications.client.messages.create')
 def test_if_notifications_are_generated(create_message_mock, sysadmin_context):
-    create_user_with_resources(with_activity=True, with_notifications_enabled=True)
+    create_user_with_resources(True, True)
     expected_sid = 'SM87105da94bff44b999e4e6eb90d8eb6a'
     create_message_mock.return_value.sid = expected_sid
     sid = helpers.call_action("send_sms_notifications")
