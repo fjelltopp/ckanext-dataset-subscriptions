@@ -9,10 +9,15 @@ from unittest import mock
 @pytest.mark.ckan_config('ckan.plugins')
 @pytest.mark.usefixtures("with_plugins")
 @pytest.mark.usefixtures("clean_db")
-def create_user_with_resources(with_activity, notifications_enabled):
-    subscribed_user = factories.User(name='user1',
-                                     activity_streams_sms_notifications=notifications_enabled,
-                                     phonenumber="+1234")
+def create_user_with_resources(with_activity,
+                               sms_notifications_enabled,
+                               whatsapp_notifications_enabled):
+    subscribed_user = factories.User(
+        name='user1',
+        activity_streams_sms_notifications=sms_notifications_enabled,
+        activity_streams_whatsapp_notifications=whatsapp_notifications_enabled,
+        phonenumber="+1234"
+    )
     active_user = factories.User(name='user2')
     organization = ckan_factories.Organization(
         users=[
@@ -41,7 +46,7 @@ def create_user_with_resources(with_activity, notifications_enabled):
 @pytest.mark.usefixtures("with_plugins")
 @pytest.mark.parametrize("notifications_enabled", [(False), (True)])
 def test_sms_notifications_disabled_enabled(notifications_enabled):
-    user = create_user_with_resources(True, notifications_enabled)
+    user = create_user_with_resources(True, notifications_enabled, False)
     notifications = twilio_notifications._sms_notifications_enabled(user)
     assert notifications == notifications_enabled
 
@@ -50,10 +55,24 @@ def test_sms_notifications_disabled_enabled(notifications_enabled):
 @pytest.mark.usefixtures("clean_db")
 @pytest.mark.usefixtures("with_plugins")
 @mock.patch('ckanext.dataset_subscriptions.actions.twilio_notifications.client.messages.create')
-def test_if_notifications_are_generated(create_message_mock, sysadmin_context):
-    create_user_with_resources(True, True)
+def test_if_sms_notifications_are_generated(create_message_mock, sysadmin_context):
+    create_user_with_resources(True, True, False)
     expected_sid = 'SM87105da94bff44b999e4e6eb90d8eb6a'
     create_message_mock.return_value.sid = expected_sid
+    sid = helpers.call_action("send_sms_notifications")
+    print(sid)
+    assert create_message_mock.called is True
+    assert sid[0] == expected_sid
+
+
+@pytest.mark.usefixtures("with_request_context")
+@pytest.mark.usefixtures("clean_db")
+@pytest.mark.usefixtures("with_plugins")
+@mock.patch('ckanext.dataset_subscriptions.actions.twilio_notifications._send_whatsapp_message')
+def test_if_whatsapp_notifications_are_generated(create_message_mock, sysadmin_context):
+    create_user_with_resources(True, False, True)
+    expected_sid = 'SM87105da94bff44b999e4e6eb90d8eb6a'
+    create_message_mock.return_value = expected_sid
     sid = helpers.call_action("send_sms_notifications")
     print(sid)
     assert create_message_mock.called is True
