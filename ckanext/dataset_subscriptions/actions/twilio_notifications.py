@@ -18,7 +18,10 @@ logger = logging.getLogger(__name__)
 def send_twilio_notifications(context, data_dict):
     message_sids = []
     toolkit.check_access('send_email_notifications', context, data_dict)
-    users = toolkit.get_action('user_list')({'ignore_auth': True}, {'all_fields': True})
+    users = toolkit.get_action('user_list')(
+        {'ignore_auth': True},
+        {'all_fields': True, 'include_plugin_extras': True}
+    )
     for user in users:
         if _twilio_notifications_enabled(user):
             recent_activities = _get_recent_activity_list(user, context)
@@ -52,7 +55,7 @@ def _twilio_notifications_enabled(user_dict):
 def _twilio_notification_time_delta_utc():
     since_hours = toolkit.config.get('ckanext.dataset_subscriptions.sms_notifications_hours_since', 1)
     since_delta = timedelta(hours=int(since_hours))
-    since_datetime = (datetime.now(timezone.utc) - since_delta)
+    since_datetime = (datetime.utcnow() - since_delta)
     return since_datetime
 
 

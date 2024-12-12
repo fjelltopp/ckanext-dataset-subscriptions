@@ -78,11 +78,11 @@ def user_update(original_action, context, data_dict):
 @toolkit.side_effect_free
 def user_list(original_action, context, data_dict):
     user_list = original_action(context, data_dict)
-    include_plugin_extras = all_fields = toolkit.asbool(data_dict.get('include_plugin_extras', False))
+    include_plugin_extras = toolkit.asbool(data_dict.get('include_plugin_extras', False))
     all_fields = toolkit.asbool(data_dict.get('all_fields', True))
     if all_fields and include_plugin_extras:
-        for user in user_list:
-            user = toolkit.get_action('user_show')(context, {'id': user['name']})
+        for index, user in enumerate(user_list):
+            user_list[index] = toolkit.get_action('user_show')(context, {'id': user['name']})
     return user_list
 
 
