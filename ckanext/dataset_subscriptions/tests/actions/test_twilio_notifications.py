@@ -68,12 +68,16 @@ def test_if_sms_notifications_are_generated(create_message_mock, sysadmin_contex
 @pytest.mark.usefixtures("with_request_context")
 @pytest.mark.usefixtures("clean_db")
 @pytest.mark.usefixtures("with_plugins")
-@mock.patch('ckanext.dataset_subscriptions.actions.twilio_notifications._send_whatsapp_message')
+@mock.patch('ckanext.dataset_subscriptions.actions.twilio_notifications.client.messages.create')
 def test_if_whatsapp_notifications_are_generated(create_message_mock, sysadmin_context):
     create_user_with_resources(True, False, True)
     expected_sid = 'SM87105da94bff44b999e4e6eb90d8eb6a'
-    create_message_mock.return_value = expected_sid
+    create_message_mock.return_value.sid = expected_sid
     sid = helpers.call_action("send_sms_notifications")
     print(sid)
     assert create_message_mock.called is True
     assert sid[0] == expected_sid
+    call_args = dict(create_message_mock.call_args.kwargs.items())
+    assert 'whatsapp:+' in call_args['to']
+    assert 'whatsapp:+' in call_args['from_']
+

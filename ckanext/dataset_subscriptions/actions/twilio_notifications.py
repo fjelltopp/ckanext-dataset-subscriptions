@@ -8,7 +8,8 @@ from ckanext.dataset_subscriptions import helpers
 
 ACCOUNT_SID = toolkit.config.get('ckanext.dataset_subscriptions.twilio_account_sid')
 AUTH_TOKEN = toolkit.config.get('ckanext.dataset_subscriptions.twilio_auth_token')
-SENDER_NR = toolkit.config.get('ckanext.dataset_subscriptions.sms_sender_nr')
+SMS_SENDER_NR = toolkit.config.get('ckanext.dataset_subscriptions.sms_sender_nr')
+WHATSAPP_SENDER_NR = toolkit.config.get('ckanext.dataset_subscriptions.whatsapp_sender_nr')
 
 
 client = Client(ACCOUNT_SID, AUTH_TOKEN)
@@ -26,11 +27,18 @@ def send_twilio_notifications(context, data_dict):
         if _twilio_notifications_enabled(user):
             recent_activities = _get_recent_activity_list(user, context)
             if recent_activities:
-                message_body = _create_message(recent_activities)
                 if _sms_notifications_enabled(user):
-                    message_sids.append(_send_sms_message(message_body, user['phonenumber']))
+                    message_sids.append(_send_message(
+                        _create_sms_message(recent_activities),
+                        SMS_SENDER_NR,
+                        user['phonenumber']
+                    ))
                 if _whatsapp_notifications_enabled(user):
-                    message_sids.append(_send_whatsapp_message(message_body, user['phonenumber']))
+                    message_sids.append(_send_message(
+                        _create_message_header(recent_activities),
+                        f"whatsapp:{WHATSAPP_SENDER_NR}",
+                        f"whatsapp:{user['phonenumber']}"
+                    ))
     return message_sids
 
 
@@ -78,14 +86,9 @@ def _get_recent_activity_list(user_dict, context):
     return recent_activity_list
 
 
-def _create_message(activities):
+def _create_sms_message(activities):
     nr_of_datasets_to_display = toolkit.config.get('ckanext.dataset_subscriptions.sms_nr_of_datasets_to_display', 2)
-    header = toolkit.ungettext(
-        "{n} dataset have recently been updated in {site_title}",
-        "{n} datasets have recently been updated in {site_title}",
-        len(activities)).format(
-                site_title=toolkit.config.get('ckan.site_title'),
-                n=len(activities))
+    header = _create_message_header(activities)
     return toolkit.render(
         'dataset-subscriptions_sms_body.j2',
         extra_vars={
@@ -96,10 +99,20 @@ def _create_message(activities):
     )
 
 
-def _send_sms_message(message_body, phonenumber):
+def _create_message_header(activities):
+    return toolkit.ungettext(
+        "{n} dataset that you are following has recently been updated in {site_title}",
+        "{n} datasets that you are following have recently been updated in {site_title}",
+        len(activities)).format(
+            site_title=toolkit.config.get('ckan.site_title'),
+            n=len(activities)
+        )
+
+
+def _send_message(message_body, sender, phonenumber):
     try:
         message = client.messages.create(
-            from_=SENDER_NR,
+            from_=sender,
             body=message_body,
             to=phonenumber
         )
@@ -107,7 +120,3 @@ def _send_sms_message(message_body, phonenumber):
         logger.exception(f"Failed to send sms message to {phonenumber}", exc_info=True)
         return
     return message.sid
-
-
-def _send_whatsapp_message(message_body, phonenumber):
-    return f"whatsapp-message-sid-{phonenumber}"
