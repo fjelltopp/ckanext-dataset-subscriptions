@@ -2,9 +2,15 @@ import copy
 import logging
 from ckan.plugins import toolkit
 import ckan.model as model
+from twilio.rest import Client
+from twilio.base.exceptions import TwilioRestException
+
+ACCOUNT_SID = toolkit.config.get('ckanext.dataset_subscriptions.twilio_account_sid')
+AUTH_TOKEN = toolkit.config.get('ckanext.dataset_subscriptions.twilio_auth_token')
 
 
 logger = logging.getLogger(__name__)
+client = Client(ACCOUNT_SID, AUTH_TOKEN)
 
 
 CUSTOM_FIELDS = [
@@ -22,8 +28,8 @@ def user_show(original_action, context, data_dict):
     user = original_action(context, data_dict)
     user_obj = _get_user_obj(context)
 
-    plugin_extras = _init_plugin_extras(user_obj.plugin_extras)
-    dataset_subscriptions_extras = _validate_plugin_extras(plugin_extras[DATASET_SUBSCRIPTIONS])
+    plugin_extras = _setup_plugin_extras(user_obj.plugin_extras)
+    dataset_subscriptions_extras = _init_plugin_extras(plugin_extras[DATASET_SUBSCRIPTIONS])
     for field in CUSTOM_FIELDS:
         user[field['name']] = dataset_subscriptions_extras[field['name']]
 
@@ -39,10 +45,11 @@ def user_create(original_action, context, data_dict):
     user_dict = original_action(context, data_dict)
     user_obj = _get_user_obj(context)
 
-    plugin_extras = _init_plugin_extras(user_obj.plugin_extras)
+    plugin_extras = _setup_plugin_extras(user_obj.plugin_extras)
     dataset_subscriptions_extras = plugin_extras[DATASET_SUBSCRIPTIONS]
     for field in CUSTOM_FIELDS:
         dataset_subscriptions_extras[field['name']] = data_dict[field['name']]
+    _validate_plugin_extras(dataset_subscriptions_extras)
     user_obj.plugin_extras = plugin_extras
     model_ = context.get('model', model)
     model_.Session.commit()
@@ -61,10 +68,11 @@ def user_update(original_action, context, data_dict):
     user_dict = original_action(context, data_dict)
     user_obj = _get_user_obj(context)
 
-    plugin_extras = _init_plugin_extras(user_obj.plugin_extras)
+    plugin_extras = _setup_plugin_extras(user_obj.plugin_extras)
     dataset_subscriptions_extras = plugin_extras[DATASET_SUBSCRIPTIONS]
     for field in CUSTOM_FIELDS:
         dataset_subscriptions_extras[field['name']] = data_dict[field['name']]
+    _validate_plugin_extras(dataset_subscriptions_extras)
     user_obj.plugin_extras = plugin_extras
     model_ = context.get('model', model)
     model_.Session.commit()
@@ -86,7 +94,7 @@ def user_list(original_action, context, data_dict):
     return user_list
 
 
-def _init_plugin_extras(plugin_extras):
+def _setup_plugin_extras(plugin_extras):
     out_dict = copy.deepcopy(plugin_extras)
     if not out_dict:
         out_dict = {}
@@ -106,10 +114,31 @@ def _get_user_obj(context):
     return user_obj
 
 
-def _validate_plugin_extras(extras):
+def _init_plugin_extras(extras):
     if not extras:
         extras = {}
     out_dict = {}
     for field in CUSTOM_FIELDS:
         out_dict[field['name']] = extras.get(field['name'], field['default'])
     return out_dict
+
+
+def _validate_plugin_extras(extras):
+    errors = {}
+    if extras.get('phonenumber'):
+        try:
+            client.lookups.phone_numbers(extras['phonenumber']).fetch(type=['carrier'])
+        except TwilioRestException:
+            errors['phonenumber'] = [toolkit._(f'Invalid phonenumber: {extras["phonenumber"]}')]
+    if extras.get('activity_streams_sms_notifications'):
+        if not extras.get('phonenumber'):
+            errors['activity_streams_sms_notifications'] = [
+                toolkit._('No phone number given')
+            ]
+    if extras.get('activity_streams_whatsapp_notifications'):
+        if not extras.get('phonenumber'):
+            errors['activity_streams_whatsapp_notifications'] = [
+                toolkit._('No phone number given')
+            ]
+    if errors:
+        raise toolkit.ValidationError(errors)

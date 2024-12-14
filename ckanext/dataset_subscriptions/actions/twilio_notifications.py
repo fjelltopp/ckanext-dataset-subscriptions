@@ -2,7 +2,7 @@ import logging
 from ckan.plugins import toolkit
 from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
-from datetime import timedelta, datetime, timezone
+from datetime import timedelta, datetime
 from ckanext.dataset_subscriptions import helpers
 
 
