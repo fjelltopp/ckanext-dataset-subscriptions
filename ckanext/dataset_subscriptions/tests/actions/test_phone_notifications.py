@@ -2,7 +2,7 @@ import pytest
 from ckan.tests import helpers
 from ckan.tests import factories as ckan_factories
 from ckanext.dataset_subscriptions.tests import factories
-from ckanext.dataset_subscriptions.actions import twilio_notifications
+from ckanext.dataset_subscriptions.actions import phone_notifications
 from unittest import mock
 
 
@@ -47,7 +47,7 @@ def create_user_with_resources(with_activity,
 @pytest.mark.parametrize("notifications_enabled", [(False), (True)])
 def test_sms_notifications_disabled_enabled(notifications_enabled):
     user = create_user_with_resources(True, notifications_enabled, False)
-    notifications = twilio_notifications._sms_notifications_enabled(user, {})
+    notifications = phone_notifications._sms_notifications_enabled(user, {})
     assert notifications == notifications_enabled
 
 
@@ -59,7 +59,7 @@ def test_if_sms_notifications_are_generated(create_message_mock, sysadmin_contex
     create_user_with_resources(True, True, False)
     expected_sid = 'SM87105da94bff44b999e4e6eb90d8eb6a'
     create_message_mock.return_value.sid = expected_sid
-    sid = helpers.call_action("send_twilio_notifications")
+    sid = helpers.call_action("send_phone_notifications")
     assert create_message_mock.called is True
     assert sid[0] == expected_sid
 
@@ -72,7 +72,7 @@ def test_if_whatsapp_notifications_are_generated(create_message_mock, sysadmin_c
     create_user_with_resources(True, False, True)
     expected_sid = 'SM87105da94bff44b999e4e6eb90d8eb6a'
     create_message_mock.return_value.sid = expected_sid
-    sid = helpers.call_action("send_twilio_notifications")
+    sid = helpers.call_action("send_phone_notifications")
     assert create_message_mock.called is True
     assert sid[0] == expected_sid
     call_args = dict(create_message_mock.call_args.kwargs.items())

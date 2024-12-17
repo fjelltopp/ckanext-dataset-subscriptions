@@ -1,6 +1,6 @@
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
-from ckanext.dataset_subscriptions.actions import email_notifications, twilio_notifications, user
+from ckanext.dataset_subscriptions.actions import email_notifications, phone_notifications, user
 
 
 class DatasetSubscriptionsPlugin(plugins.SingletonPlugin):
@@ -17,7 +17,7 @@ class DatasetSubscriptionsPlugin(plugins.SingletonPlugin):
     def get_actions(self):
         return {
             'send_email_notifications': email_notifications.send_email_notifications,
-            'send_twilio_notifications': twilio_notifications.send_twilio_notifications,
+            'send_phone_notifications': phone_notifications.send_phone_notifications,
             'user_create': user.user_create,
             'user_update': user.user_update,
             'user_show': user.user_show,

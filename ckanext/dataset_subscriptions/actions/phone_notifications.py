@@ -16,7 +16,7 @@ client = Client(ACCOUNT_SID, AUTH_TOKEN)
 logger = logging.getLogger(__name__)
 
 
-def send_twilio_notifications(context, data_dict):
+def send_phone_notifications(context, data_dict):
     """
     Sends SMS and Whatsapp notifications via the Twilio API.  Both notification types
     have been combined into a single action since they share a great deal of logic
