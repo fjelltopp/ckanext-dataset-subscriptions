@@ -17,6 +17,16 @@ logger = logging.getLogger(__name__)
 
 
 def send_twilio_notifications(context, data_dict):
+    """
+    Sends SMS and Whatsapp notifications via the Twilio API.  Both notification types
+    have been combined into a single action since they share a great deal of logic
+    which requires a loop through all site users.
+
+    :param send_sms: Send SMS messages (optional, default: ``True``)
+    :type send_sms: bool
+    :param send_whatsapp: Send Whatsapp messages (optional, default: ``True``)
+    :type send_whatsapp: bool
+    """
     message_sids = []
     toolkit.check_access('send_email_notifications', context, data_dict)
     users = toolkit.get_action('user_list')(
@@ -42,22 +52,25 @@ def send_twilio_notifications(context, data_dict):
     return message_sids
 
 
-def _sms_notifications_enabled(user_dict):
-    enable_sms = toolkit.asbool(user_dict.get("activity_streams_sms_notifications"))
-    if enable_sms and user_dict.get("phonenumber"):
+def _sms_notifications_enabled(user_dict, data_dict):
+    action_send_sms = toolkit.asbool(data_dict.get('send_sms', True))
+    user_enabled_sms = toolkit.asbool(user_dict.get("activity_streams_sms_notifications"))
+    if action_send_sms and user_enabled_sms and user_dict.get("phonenumber"):
         return True
     return False
 
 
-def _whatsapp_notifications_enabled(user_dict):
-    enable_whatsapp = toolkit.asbool(user_dict.get("activity_streams_whatsapp_notifications"))
-    if enable_whatsapp and user_dict.get("phonenumber"):
+def _whatsapp_notifications_enabled(user_dict, data_dict):
+    action_send_whatsapp = toolkit.asbool(data_dict.get('send_whatsapp', True))
+    user_enabled_whatsapp = toolkit.asbool(user_dict.get("activity_streams_whatsapp_notifications"))
+    if action_send_whatsapp and user_enabled_whatsapp and user_dict.get("phonenumber"):
         return True
     return False
 
 
-def _twilio_notifications_enabled(user_dict):
-    if _sms_notifications_enabled(user_dict) or _whatsapp_notifications_enabled(user_dict):
+def _twilio_notifications_enabled(user_dict, data_dict):
+    if _sms_notifications_enabled(user_dict, data_dict) or \
+       _whatsapp_notifications_enabled(user_dict, data_dict):
         return True
     return False
 

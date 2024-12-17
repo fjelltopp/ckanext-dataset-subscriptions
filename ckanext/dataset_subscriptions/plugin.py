@@ -17,7 +17,7 @@ class DatasetSubscriptionsPlugin(plugins.SingletonPlugin):
     def get_actions(self):
         return {
             'send_email_notifications': email_notifications.send_email_notifications,
-            'send_sms_notifications': twilio_notifications.send_twilio_notifications,
+            'send_twilio_notifications': twilio_notifications.send_twilio_notifications,
             'user_create': user.user_create,
             'user_update': user.user_update,
             'user_show': user.user_show,
