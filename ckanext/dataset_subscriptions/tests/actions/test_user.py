@@ -20,9 +20,7 @@ class TestUserActions():
             "phonenumber": "+447855474558",
             "activity_streams_sms_notifications": True
         }
-
         created_user = helpers.call_action('user_create', context=sysadmin_context, **user_dict)
-
         for key in ["phonenumber", "activity_streams_sms_notifications"]:
             assert created_user[key] == user_dict[key]
 
@@ -34,8 +32,12 @@ class TestUserActions():
             }
         }
         helpers.call_action('user_update', **user_dict)
-        updated_user = helpers.call_action('user_show', context=sysadmin_context, include_plugin_extras=True, **user_dict)
-
+        updated_user = helpers.call_action(
+            'user_show',
+            context=sysadmin_context,
+            include_plugin_extras=True,
+            **user_dict
+        )
         for key in ["phonenumber", "activity_streams_sms_notifications"]:
             assert updated_user[key] == user_dict[key]
 
@@ -61,7 +63,8 @@ class TestUserActions():
         ("", True, False, pytest.raises(toolkit.ValidationError)),
         ("", True, True, pytest.raises(toolkit.ValidationError))
     ])
-    def test_user_validate_plugin_extras_requires_phonenumber(self, phonenumber, enable_sms, enable_whatsapp, expectation, sysadmin_context):
+    def test_user_validate_plugin_extras_requires_phonenumber(self, phonenumber, enable_sms,
+                                                              enable_whatsapp, expectation, sysadmin_context):
         user_dict = {
             "name": "test_user_001",
             "fullname": "Mr. Test User",

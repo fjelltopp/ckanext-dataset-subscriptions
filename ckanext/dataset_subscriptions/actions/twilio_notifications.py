@@ -102,7 +102,9 @@ def _get_recent_activity_list(user_dict, context):
 
 
 def _create_sms_message(activities):
-    nr_of_datasets_to_display = toolkit.config.get('ckanext.dataset_subscriptions.sms_nr_of_datasets_to_display', 2)
+    nr_of_datasets_to_display = toolkit.config.get(
+        'ckanext.dataset_subscriptions.sms_nr_of_datasets_to_display', 2
+    )
     header = _create_message_header(activities)
     return toolkit.render(
         'dataset-subscriptions_sms_body.j2',
