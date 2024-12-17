@@ -128,14 +128,25 @@ def _validate_plugin_extras(extras):
     if extras.get('phonenumber'):
         try:
             client.lookups.phone_numbers(extras['phonenumber']).fetch(type=['carrier'])
-        except TwilioRestException:
-            errors['phonenumber'] = [toolkit._(f'Invalid phonenumber: {extras["phonenumber"]}')]
-    if extras.get('activity_streams_sms_notifications'):
+        except TwilioRestException as e:
+            if e.status == 404:
+                errors['phonenumber'] = [toolkit._(f'Invalid phonenumber: {extras["phonenumber"]}')]
+            else:
+                logger.exception(
+                    f"Failed to reach Twilio API to verify phonenumber {extras['phonenumber']}",
+                    exc_info=True
+                )
+        except Exception:
+            logger.exception(
+                f"Failed to reach Twilio API to verify phonenumber {extras['phonenumber']}",
+                exc_info=True
+            )
+    if toolkit.asbool(extras.get('activity_streams_sms_notifications')):
         if not extras.get('phonenumber'):
             errors['activity_streams_sms_notifications'] = [
                 toolkit._('No phone number given')
             ]
-    if extras.get('activity_streams_whatsapp_notifications'):
+    if toolkit.asbool(extras.get('activity_streams_whatsapp_notifications')):
         if not extras.get('phonenumber'):
             errors['activity_streams_whatsapp_notifications'] = [
                 toolkit._('No phone number given')

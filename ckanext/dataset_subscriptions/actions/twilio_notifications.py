@@ -43,13 +43,15 @@ def send_twilio_notifications(context, data_dict):
 
 
 def _sms_notifications_enabled(user_dict):
-    if user_dict.get("activity_streams_sms_notifications") and user_dict.get("phonenumber"):
+    enable_sms = toolkit.asbool(user_dict.get("activity_streams_sms_notifications"))
+    if enable_sms and user_dict.get("phonenumber"):
         return True
     return False
 
 
 def _whatsapp_notifications_enabled(user_dict):
-    if user_dict.get("activity_streams_whatsapp_notifications") and user_dict.get("phonenumber"):
+    enable_whatsapp = toolkit.asbool(user_dict.get("activity_streams_whatsapp_notifications"))
+    if enable_whatsapp and user_dict.get("phonenumber"):
         return True
     return False
 
