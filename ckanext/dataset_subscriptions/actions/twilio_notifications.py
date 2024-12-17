@@ -34,16 +34,16 @@ def send_twilio_notifications(context, data_dict):
         {'all_fields': True, 'include_plugin_extras': True}
     )
     for user in users:
-        if _twilio_notifications_enabled(user):
+        if _twilio_notifications_enabled(user, data_dict):
             recent_activities = _get_recent_activity_list(user, context)
             if recent_activities:
-                if _sms_notifications_enabled(user):
+                if _sms_notifications_enabled(user, data_dict):
                     message_sids.append(_send_message(
                         _create_sms_message(recent_activities),
                         SMS_SENDER_NR,
                         user['phonenumber']
                     ))
-                if _whatsapp_notifications_enabled(user):
+                if _whatsapp_notifications_enabled(user, data_dict):
                     message_sids.append(_send_message(
                         _create_message_header(recent_activities),
                         f"whatsapp:{WHATSAPP_SENDER_NR}",
