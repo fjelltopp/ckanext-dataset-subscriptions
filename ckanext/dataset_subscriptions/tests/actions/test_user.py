@@ -58,7 +58,7 @@ class TestUserActions():
             helpers.call_action('user_create', context=sysadmin_context, **user_dict)
 
     @pytest.mark.parametrize('phonenumber, enable_sms, enable_whatsapp, expectation', [
-        ("+44712345678", False, False, nullcontext(1)),
+        ("", False, False, nullcontext(1)),
         ("", False, True, pytest.raises(toolkit.ValidationError)),
         ("", True, False, pytest.raises(toolkit.ValidationError)),
         ("", True, True, pytest.raises(toolkit.ValidationError))
