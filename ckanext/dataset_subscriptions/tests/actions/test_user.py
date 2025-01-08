@@ -58,10 +58,11 @@ class TestUserActions():
             helpers.call_action('user_create', context=sysadmin_context, **user_dict)
 
     @pytest.mark.parametrize('phonenumber, enable_sms, enable_whatsapp, expectation', [
-        ("", False, False, nullcontext(1)),
+        ("+44712345678", False, False, nullcontext(1)),
         ("", False, True, pytest.raises(toolkit.ValidationError)),
         ("", True, False, pytest.raises(toolkit.ValidationError)),
-        ("", True, True, pytest.raises(toolkit.ValidationError))
+        ("", True, True, pytest.raises(toolkit.ValidationError)),
+        ("+44712345678", True, True, pytest.raises(toolkit.ValidationError)),
     ])
     def test_user_validate_plugin_extras_requires_phonenumber(self, phonenumber, enable_sms,
                                                               enable_whatsapp, expectation, sysadmin_context):
