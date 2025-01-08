@@ -146,6 +146,10 @@ def _validate_plugin_extras(extras):
             errors['activity_streams_sms_notifications'] = [
                 toolkit._('No phone number given')
             ]
+        if toolkit.asbool(extras.get('activity_streams_whatsapp_notifications')):
+            errors['activity_streams_sms_notifications'] = [
+                toolkit._('Please select either Whatsapp or SMS notifications - not both. ')
+            ]
     if toolkit.asbool(extras.get('activity_streams_whatsapp_notifications')):
         if not extras.get('phonenumber'):
             errors['activity_streams_whatsapp_notifications'] = [
